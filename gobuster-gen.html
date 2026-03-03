@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOBUSTER.GEN — Command Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #05080d;
+  --bg2:   #090e16;
+  --bg3:   #0d1520;
+  --bg4:   #111d2c;
+  --bg5:   #162030;
+  --orange: #ff6b2b;
+  --amber:  #ffaa00;
+  --green:  #39ff7a;
+  --cyan:   #00e5ff;
+  --red:    #ff3355;
+  --purple: #c77dff;
+  --dim:    #2a3a4e;
+  --text:   #d0e4f5;
+  --text2:  #6a8aaa;
+  --border: #182535;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+}
+
+/* Scanline effect */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Noise overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.wrap { position: relative; z-index: 1; max-width: 1500px; margin: 0 auto; padding: 0 24px; }
+
+/* HEADER */
+header {
+  border-bottom: 1px solid var(--border);
+  background: rgba(5,8,13,0.96);
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; gap: 16px; flex-wrap: wrap;
+}
+
+.logo {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 3px;
+  text-shadow: 0 0 20px rgba(255,107,43,0.5);
+}
+
+.logo em { color: var(--amber); font-style: normal; }
+
+.logo-sub {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text2);
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+.header-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.badge {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+.badge-warn { background: rgba(255,107,43,0.15); color: var(--orange); border: 1px solid rgba(255,107,43,0.3); }
+.badge-info { background: rgba(0,229,255,0.1); color: var(--cyan); border: 1px solid rgba(0,229,255,0.2); }
+.badge-ok   { background: rgba(57,255,122,0.1); color: var(--green); border: 1px solid rgba(57,255,122,0.2); }
+
+/* HERO */
+.hero { padding: 40px 0 30px; text-align: center; }
+
+.hero h1 {
+  font-family: var(--mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--orange);
+  text-shadow: 0 0 40px rgba(255,107,43,0.4);
+  margin-bottom: 8px;
+}
+
+.hero h1 span { color: var(--amber); }
+
+.hero p {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text2);
+  letter-spacing: 2px;
+}
+
+/* MAIN LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  padding-bottom: 120px;
+}
+
+/* =================== SIDEBAR =================== */
+.sidebar { }
+
+.sidebar-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.ss-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ss-header:hover { background: var(--bg4); }
+
+.ss-icon { font-size: 1rem; }
+
+.ss-title {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 2px;
+  flex: 1;
+}
+
+.ss-arrow {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text2);
+  transition: transform 0.2s;
+}
+
+.ss-arrow.open { transform: rotate(90deg); }
+
+.ss-body { padding: 14px 16px; }
+.ss-body.collapsed { display: none; }
+
+/* FORM ELEMENTS */
+.field { margin-bottom: 12px; }
+
+.field label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--cyan);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.field label .hint {
+  color: var(--text2);
+  font-size: 0.6rem;
+  font-weight: 400;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--dim);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 10px rgba(255,107,43,0.15);
+}
+
+input::placeholder { color: var(--dim); }
+select option { background: var(--bg3); }
+
+textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+
+/* CHECKBOX ROW */
+.check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text2);
+  user-select: none;
+}
+
+.check-item:hover { background: var(--bg4); color: var(--text); }
+.check-item.active { background: rgba(255,107,43,0.1); border-color: rgba(255,107,43,0.3); color: var(--orange); }
+.check-item .ci-key { color: var(--cyan); font-size: 0.65rem; }
+
+/* TOGGLE SWITCH */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.toggle-row:last-child { border-bottom: none; }
+
+.toggle-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text2);
+}
+
+.toggle-label strong { color: var(--cyan); font-weight: 400; margin-right: 5px; }
+.toggle-label small { color: var(--dim); font-size: 0.6rem; display: block; margin-top: 1px; }
+
+.toggle {
+  width: 36px; height: 18px;
+  background: var(--dim);
+  border-radius: 9px;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 12px; height: 12px;
+  background: var(--text2);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.toggle.on { background: rgba(255,107,43,0.4); }
+.toggle.on::after { left: 21px; background: var(--orange); }
+
+/* RANGE */
+.range-row {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.range-row input[type="range"] {
+  flex: 1; padding: 0;
+  background: transparent;
+  border: none;
+  accent-color: var(--orange);
+}
+
+.range-val {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--orange);
+  min-width: 30px;
+  text-align: right;
+}
+
+/* STATUS CODES */
+.code-grid {
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+
+.code-tag {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  padding: 3px 9px;
+  border-radius: 2px;
+  border: 1px solid var(--dim);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.code-tag:hover { border-color: var(--text2); color: var(--text); }
+.code-tag.active { border-color: var(--green); color: var(--green); background: rgba(57,255,122,0.08); }
+.code-tag.c2xx { }
+.code-tag.c3xx.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,0.08); }
+.code-tag.c4xx.active { border-color: var(--amber); color: var(--amber); background: rgba(255,170,0,0.08); }
+.code-tag.c5xx.active { border-color: var(--red); color: var(--red); background: rgba(255,51,85,0.08); }
+
+/* =================== MAIN CONTENT =================== */
+.main { }
+
+/* MODE TABS */
+.mode-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: var(--bg2);
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.mode-tab {
+  flex: 1;
+  min-width: 80px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.mode-tab:hover { background: var(--bg4); color: var(--text); }
+
+.mode-tab.active {
+  background: rgba(255,107,43,0.15);
+  border-color: rgba(255,107,43,0.4);
+  color: var(--orange);
+  text-shadow: 0 0 10px rgba(255,107,43,0.3);
+}
+
+/* MODE INFO */
+.mode-info {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--orange);
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+.mode-info strong { color: var(--orange); font-weight: 700; }
+.mode-info code { color: var(--cyan); background: var(--bg3); padding: 1px 5px; border-radius: 2px; }
+
+/* COMMAND CARDS */
+.commands-area { margin-bottom: 16px; }
+
+.cmd-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.cmd-card:hover { border-color: var(--dim); }
+
+.cmd-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+
+.cmd-num {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--orange);
+  background: rgba(255,107,43,0.15);
+  border: 1px solid rgba(255,107,43,0.3);
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.cmd-label-text {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text2);
+  flex: 1;
+}
+
+.cmd-actions { display: flex; gap: 6px; }
+
+.cmd-body { padding: 14px 16px; }
+
+.cmd-output {
+  background: var(--bg);
+  border: 1px solid var(--dim);
+  border-radius: 3px;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--amber);
+  word-break: break-all;
+  line-height: 1.8;
+  min-height: 52px;
+  position: relative;
+}
+
+.cmd-output.empty { color: var(--dim); font-style: italic; }
+
+.cmd-output .c-prog { color: var(--orange); font-weight: 700; }
+.cmd-output .c-mode { color: var(--purple); }
+.cmd-output .c-flag { color: var(--cyan); }
+.cmd-output .c-val  { color: var(--amber); }
+.cmd-output .c-url  { color: var(--green); }
+
+/* FOLDER BATCH */
+.folder-batch-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--purple);
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.fb-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+
+.fb-header h3 {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--purple);
+  letter-spacing: 2px;
+}
+
+.fb-header p {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.wordlist-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.wl-preset {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.wl-preset:hover { border-color: var(--purple); background: var(--bg4); }
+.wl-preset.active { border-color: var(--purple); background: rgba(199,125,255,0.1); }
+
+.wl-name {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.wl-path {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text2);
+}
+
+/* OUTPUT AREA */
+.output-area {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--green);
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.oa-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.oa-title {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--green);
+  letter-spacing: 2px;
+}
+
+.final-output {
+  background: var(--bg);
+  border: 1px solid var(--dim);
+  border-radius: 3px;
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--amber);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.9;
+  min-height: 80px;
+  counter-reset: line;
+}
+
+.final-output .line {
+  display: block;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.final-output .line:last-child { border-bottom: none; }
+
+.final-output .line:hover { background: rgba(255,255,255,0.02); }
+
+/* BUTTONS */
+.btn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  border-radius: 3px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.btn-orange { background: rgba(255,107,43,0.15); border-color: var(--orange); color: var(--orange); }
+.btn-orange:hover { background: rgba(255,107,43,0.25); box-shadow: 0 0 15px rgba(255,107,43,0.2); }
+
+.btn-green { background: rgba(57,255,122,0.1); border-color: var(--green); color: var(--green); }
+.btn-green:hover { background: rgba(57,255,122,0.2); box-shadow: 0 0 15px rgba(57,255,122,0.2); }
+
+.btn-cyan { background: rgba(0,229,255,0.1); border-color: var(--cyan); color: var(--cyan); }
+.btn-cyan:hover { background: rgba(0,229,255,0.2); }
+
+.btn-purple { background: rgba(199,125,255,0.1); border-color: var(--purple); color: var(--purple); }
+.btn-purple:hover { background: rgba(199,125,255,0.2); }
+
+.btn-red { background: rgba(255,51,85,0.1); border-color: var(--red); color: var(--red); }
+.btn-red:hover { background: rgba(255,51,85,0.2); }
+
+.btn-dim { background: transparent; border-color: var(--dim); color: var(--text2); }
+.btn-dim:hover { border-color: var(--text2); color: var(--text); }
+
+.btn-sm { padding: 5px 10px; font-size: 0.65rem; }
+
+/* ROW BTN GROUP */
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+/* SECTION DIVIDER */
+.sdiv {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text2);
+  letter-spacing: 3px;
+  margin: 14px 0 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.sdiv::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* CHAINING */
+.chain-mode {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.chain-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text2);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.chain-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.chain-opt {
+  padding: 7px 14px;
+  border-radius: 3px;
+  border: 1px solid var(--dim);
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chain-opt:hover { border-color: var(--cyan); color: var(--cyan); }
+.chain-opt.active { background: rgba(0,229,255,0.1); border-color: var(--cyan); color: var(--cyan); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--orange); }
+
+/* TOAST */
+.toast {
+  position: fixed; top: 80px; right: 20px;
+  background: var(--bg3);
+  border: 1px solid var(--orange);
+  color: var(--orange);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  padding: 12px 20px;
+  border-radius: 4px;
+  z-index: 9998;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s;
+  box-shadow: 0 0 20px rgba(255,107,43,0.2);
+}
+.toast.show { opacity: 1; transform: translateX(0); }
+
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+.blink { animation: blink 1s step-end infinite; }
+
+/* RESPONSIVE */
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 1.5rem; }
+}
+
+/* PILL tag */
+.pill {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--dim);
+  color: var(--text2);
+  margin-left: 5px;
+}
+
+/* INPUT-WITH-BTN */
+.input-btn-row { display: flex; gap: 6px; }
+.input-btn-row input { flex: 1; }
+
+.sep { height: 1px; background: var(--border); margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="header-inner">
+      <div>
+        <div class="logo">GO<em>BUSTER</em>.GEN</div>
+        <div class="logo-sub">// COMMAND BUILDER & BATCH GENERATOR</div>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-warn">⚠ AUTHORIZED USE ONLY</span>
+        <span class="badge badge-info">gobuster v3.6+</span>
+        <span class="badge badge-ok">MULTI-CMD SUPPORT</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>GOBUSTER <span>COMMAND BUILDER</span><span class="blink">_</span></h1>
+    <p>// build · chain · batch · execute</p>
+  </div>
+
+  <div class="layout">
+
+    <!-- =================== SIDEBAR =================== -->
+    <div class="sidebar">
+
+      <!-- TARGET -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">🎯</span>
+          <span class="ss-title">TARGET</span>
+          <span class="ss-arrow open">▶</span>
+        </div>
+        <div class="ss-body" id="sec-target">
+          <div class="field">
+            <label>URL / DOMAIN <span class="hint">required</span></label>
+            <input type="text" id="target" placeholder="https://example.com" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>USERNAME <span class="hint">Basic Auth</span></label>
+            <input type="text" id="username" placeholder="admin" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>PASSWORD <span class="hint">Basic Auth</span></label>
+            <input type="text" id="password" placeholder="password" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>COOKIE <span class="hint">session cookie</span></label>
+            <input type="text" id="cookie" placeholder="session=abc123" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>PROXY</label>
+            <input type="text" id="proxy" placeholder="http://127.0.0.1:8080" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>USER-AGENT</label>
+            <input type="text" id="useragent" placeholder="Mozilla/5.0 ..." oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>CUSTOM HEADERS</label>
+            <textarea id="headers" placeholder="X-Forwarded-For: 127.0.0.1&#10;Authorization: Bearer token" oninput="rebuildAll()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORDLIST -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">📚</span>
+          <span class="ss-title">WORDLIST</span>
+          <span class="ss-arrow open">▶</span>
+        </div>
+        <div class="ss-body" id="sec-wordlist">
+          <div class="field">
+            <label>WORDLIST PATH</label>
+            <div class="input-btn-row">
+              <input type="text" id="wordlist" placeholder="/usr/share/wordlists/dirb/common.txt" oninput="rebuildAll()">
+              <button class="btn btn-dim btn-sm" onclick="clearField('wordlist')">✕</button>
+            </div>
+          </div>
+          <div class="sdiv">QUICK SELECT</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/wordlists/dirb/common.txt')">dirb/common</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/wordlists/dirb/big.txt')">dirb/big</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt')">dirbuster/medium</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/wordlists/dirbuster/directory-list-2.3-small.txt')">dirbuster/small</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt')">raft-medium-dirs</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt')">raft-large-files</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/seclists/Discovery/Web-Content/common.txt')">seclists/common</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/seclists/Discovery/DNS/namelist.txt')">seclists/dns</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt')">api-endpoints</button>
+            <button class="btn btn-dim btn-sm" onclick="setWordlist('/usr/share/seclists/Discovery/Web-Content/big.txt')">seclists/big</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERFORMANCE -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">⚡</span>
+          <span class="ss-title">PERFORMANCE</span>
+          <span class="ss-arrow open">▶</span>
+        </div>
+        <div class="ss-body" id="sec-perf">
+          <div class="field">
+            <label>THREADS <span class="hint">default: 10</span></label>
+            <div class="range-row">
+              <input type="range" id="threads" min="1" max="200" value="30" oninput="updateRange('threads','threadsVal');rebuildAll()">
+              <span class="range-val" id="threadsVal">30</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>TIMEOUT (sec)</label>
+            <div class="range-row">
+              <input type="range" id="timeout" min="1" max="60" value="10" oninput="updateRange('timeout','timeoutVal');rebuildAll()">
+              <span class="range-val" id="timeoutVal">10</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>DELAY BETWEEN REQS (ms)</label>
+            <div class="range-row">
+              <input type="range" id="delay" min="0" max="5000" step="100" value="0" oninput="updateRange('delay','delayVal');rebuildAll()">
+              <span class="range-val" id="delayVal">0</span>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-k</strong> Skip TLS verify<small>ignore cert errors</small></div>
+            <div class="toggle" id="tog-k" onclick="toggleFlag('k')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-r</strong> Follow redirects<small>follow 30x responses</small></div>
+            <div class="toggle" id="tog-r" onclick="toggleFlag('r')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-n</strong> No status codes<small>don't print status</small></div>
+            <div class="toggle" id="tog-n" onclick="toggleFlag('n')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-e</strong> Expanded mode<small>print full URL</small></div>
+            <div class="toggle" id="tog-e" onclick="toggleFlag('e')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-q</strong> Quiet mode<small>no banner</small></div>
+            <div class="toggle" id="tog-q" onclick="toggleFlag('q')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-z</strong> No progress<small>don't show progress</small></div>
+            <div class="toggle" id="tog-z" onclick="toggleFlag('z')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>--no-error</strong> Suppress errors<small>don't print errors</small></div>
+            <div class="toggle" id="tog-noerror" onclick="toggleFlag('noerror')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATUS CODES -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">🔢</span>
+          <span class="ss-title">STATUS CODES</span>
+          <span class="ss-arrow open">▶</span>
+        </div>
+        <div class="ss-body" id="sec-status">
+          <div class="field">
+            <label>SHOW ONLY (--status-codes)</label>
+            <div class="code-grid" id="statusCodes">
+              <span class="code-tag c2xx active" data-code="200">200</span>
+              <span class="code-tag c2xx active" data-code="201">201</span>
+              <span class="code-tag c2xx" data-code="204">204</span>
+              <span class="code-tag c3xx" data-code="301">301</span>
+              <span class="code-tag c3xx" data-code="302">302</span>
+              <span class="code-tag c3xx" data-code="307">307</span>
+              <span class="code-tag c3xx" data-code="308">308</span>
+              <span class="code-tag c4xx" data-code="400">400</span>
+              <span class="code-tag c4xx" data-code="401">401</span>
+              <span class="code-tag c4xx" data-code="403">403</span>
+              <span class="code-tag c4xx active" data-code="404">404</span>
+              <span class="code-tag c4xx" data-code="405">405</span>
+              <span class="code-tag c4xx" data-code="422">422</span>
+              <span class="code-tag c4xx" data-code="429">429</span>
+              <span class="code-tag c5xx" data-code="500">500</span>
+              <span class="code-tag c5xx" data-code="503">503</span>
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>BLACKLIST (--status-codes-blacklist)</label>
+            <input type="text" id="statusBlacklist" placeholder="404,403" oninput="rebuildAll()">
+          </div>
+          <div class="btn-row" style="margin-top:8px">
+            <button class="btn btn-dim btn-sm" onclick="selectAllCodes()">ALL 2xx/3xx</button>
+            <button class="btn btn-dim btn-sm" onclick="clearAllCodes()">CLEAR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIR MODE EXTRAS -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">📂</span>
+          <span class="ss-title">DIR OPTIONS</span>
+          <span class="ss-arrow open">▶</span>
+        </div>
+        <div class="ss-body" id="sec-dir">
+          <div class="field">
+            <label>EXTENSIONS (-x)</label>
+            <input type="text" id="extensions" placeholder="php,html,js,txt,bak" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>EXCLUDE EXTENSIONS (--exclude-length)</label>
+            <input type="text" id="excludeLength" placeholder="2435,5467" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>OUTPUT FILE (-o)</label>
+            <input type="text" id="outputFile" placeholder="output.txt" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>OUTPUT FORMAT (--format)</label>
+            <select id="outputFormat" onchange="rebuildAll()">
+              <option value="">— none —</option>
+              <option value="json">json</option>
+              <option value="csv">csv</option>
+              <option value="xml">xml</option>
+            </select>
+          </div>
+          <div class="sep"></div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-f</strong> Append slash<small>add trailing /</small></div>
+            <div class="toggle" id="tog-f" onclick="toggleFlag('f')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-U</strong> Uppercase<small>uppercase wordlist</small></div>
+            <div class="toggle" id="tog-U" onclick="toggleFlag('U')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-l</strong> Include length<small>show response length</small></div>
+            <div class="toggle" id="tog-l" onclick="toggleFlag('l')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>--wildcard</strong> Force wildcard<small>force continue on wildcard</small></div>
+            <div class="toggle" id="tog-wildcard" onclick="toggleFlag('wildcard')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-d</strong> Discover backup<small>find backup files</small></div>
+            <div class="toggle" id="tog-d" onclick="toggleFlag('d')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DNS OPTIONS -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">🌐</span>
+          <span class="ss-title">DNS OPTIONS</span>
+          <span class="ss-arrow">▶</span>
+        </div>
+        <div class="ss-body collapsed" id="sec-dns">
+          <div class="field">
+            <label>RESOLVER</label>
+            <input type="text" id="dnsResolver" placeholder="8.8.8.8" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>DOMAIN (override target)</label>
+            <input type="text" id="dnsDomain" placeholder="example.com" oninput="rebuildAll()">
+          </div>
+          <div class="sep"></div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-c</strong> Show CNAME<small>show CNAME records</small></div>
+            <div class="toggle" id="tog-c" onclick="toggleFlag('c')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>-i</strong> Show IPs<small>show IP addresses</small></div>
+            <div class="toggle" id="tog-i" onclick="toggleFlag('i')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>--wildcard</strong> Wildcard DNS<small>force continue</small></div>
+            <div class="toggle" id="tog-wildcard2" onclick="toggleFlag('wildcard')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VHOST OPTIONS -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">🏠</span>
+          <span class="ss-title">VHOST OPTIONS</span>
+          <span class="ss-arrow">▶</span>
+        </div>
+        <div class="ss-body collapsed" id="sec-vhost">
+          <div class="field">
+            <label>APPEND DOMAIN</label>
+            <input type="text" id="vhostAppend" placeholder=".example.com" oninput="rebuildAll()">
+          </div>
+          <div class="field">
+            <label>EXCLUDE LENGTH</label>
+            <input type="text" id="vhostExclude" placeholder="287,350" oninput="rebuildAll()">
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label"><strong>--dedupe</strong> Deduplicate<small>remove duplicate vhosts</small></div>
+            <div class="toggle" id="tog-dedupe" onclick="toggleFlag('dedupe')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FUZZ OPTIONS -->
+      <div class="sidebar-section">
+        <div class="ss-header" onclick="toggleSection(this)">
+          <span class="ss-icon">🧪</span>
+          <span class="ss-title">FUZZ OPTIONS</span>
+          <span class="ss-arrow">▶</span>
+        </div>
+        <div class="ss-body collapsed" id="sec-fuzz">
+          <div class="field">
+            <label>FUZZ KEYWORD <span class="hint">replaces FUZZ in URL</span></label>
+            <input type="text" id="fuzzKeyword" placeholder="FUZZ" oninput="rebuildAll()" value="FUZZ">
+          </div>
+          <div class="field">
+            <label>EXCLUDE LENGTH</label>
+            <input type="text" id="fuzzExclude" placeholder="512,1024" oninput="rebuildAll()">
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /SIDEBAR -->
+
+    <!-- =================== MAIN =================== -->
+    <div class="main">
+
+      <!-- MODE SELECTION -->
+      <div style="margin-bottom:6px">
+        <div style="font-family:var(--mono);font-size:0.65rem;color:var(--text2);letter-spacing:2px;margin-bottom:6px">SELECT MODE</div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" id="tab-dir" onclick="setMode('dir')">DIR</button>
+          <button class="mode-tab" id="tab-dns" onclick="setMode('dns')">DNS</button>
+          <button class="mode-tab" id="tab-vhost" onclick="setMode('vhost')">VHOST</button>
+          <button class="mode-tab" id="tab-fuzz" onclick="setMode('fuzz')">FUZZ</button>
+          <button class="mode-tab" id="tab-s3" onclick="setMode('s3')">S3</button>
+          <button class="mode-tab" id="tab-gcs" onclick="setMode('gcs')">GCS</button>
+          <button class="mode-tab" id="tab-tftp" onclick="setMode('tftp')">TFTP</button>
+        </div>
+      </div>
+
+      <!-- MODE INFO -->
+      <div class="mode-info" id="modeInfo"></div>
+
+      <!-- CHAINING MODE -->
+      <div class="chain-mode">
+        <div class="chain-label">▸ COMMAND CHAINING</div>
+        <div class="chain-opts">
+          <button class="chain-opt active" id="chain-seq" onclick="setChain('sequential')">Sequential (one by one)</button>
+          <button class="chain-opt" id="chain-par" onclick="setChain('parallel')">Parallel (&amp;&amp; / &amp;)</button>
+          <button class="chain-opt" id="chain-script" onclick="setChain('script')">Bash Script (.sh)</button>
+          <button class="chain-opt" id="chain-pipe" onclick="setChain('pipe')">Pipe Output</button>
+        </div>
+      </div>
+
+      <!-- COMMANDS AREA -->
+      <div class="commands-area" id="commandsArea">
+        <!-- Cards injected here -->
+      </div>
+
+      <div class="btn-row" style="margin-bottom:20px">
+        <button class="btn btn-orange" onclick="addCommand()">+ ADD COMMAND</button>
+        <button class="btn btn-dim" onclick="duplicateLastCmd()">⎘ DUPLICATE LAST</button>
+        <button class="btn btn-red btn-sm" onclick="clearCommands()">✕ CLEAR ALL CMDS</button>
+      </div>
+
+      <!-- FOLDER BATCH -->
+      <div class="folder-batch-section">
+        <div class="fb-header">
+          <span style="font-size:1.5rem">📁</span>
+          <div>
+            <h3>FOLDER BATCH MODE</h3>
+            <p>Run gobuster against ALL wordlists in a folder automatically</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>WORDLIST FOLDER PATH</label>
+          <div class="input-btn-row">
+            <input type="text" id="batchFolder" placeholder="/usr/share/seclists/Discovery/Web-Content/" oninput="rebuildBatch()">
+            <button class="btn btn-dim btn-sm" onclick="clearField('batchFolder')">✕</button>
+          </div>
+        </div>
+
+        <div class="sdiv">QUICK FOLDER PRESETS</div>
+        <div class="wordlist-presets" id="folderPresets">
+          <div class="wl-preset" onclick="setFolder('/usr/share/wordlists/dirb/')">
+            <div class="wl-name">dirb/</div>
+            <div class="wl-path">/usr/share/wordlists/dirb/</div>
+          </div>
+          <div class="wl-preset" onclick="setFolder('/usr/share/wordlists/dirbuster/')">
+            <div class="wl-name">dirbuster/</div>
+            <div class="wl-path">/usr/share/wordlists/dirbuster/</div>
+          </div>
+          <div class="wl-preset" onclick="setFolder('/usr/share/seclists/Discovery/Web-Content/')">
+            <div class="wl-name">seclists/Web-Content/</div>
+            <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/</div>
+          </div>
+          <div class="wl-preset" onclick="setFolder('/usr/share/seclists/Discovery/DNS/')">
+            <div class="wl-name">seclists/DNS/</div>
+            <div class="wl-path">/usr/share/seclists/Discovery/DNS/</div>
+          </div>
+          <div class="wl-preset" onclick="setFolder('/usr/share/seclists/Discovery/Web-Content/api/')">
+            <div class="wl-name">seclists/API/</div>
+            <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/api/</div>
+          </div>
+          <div class="wl-preset" onclick="setFolder('/opt/wordlists/')">
+            <div class="wl-name">custom opt/</div>
+            <div class="wl-path">/opt/wordlists/</div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:12px">
+          <label>FILTER BY EXTENSION (optional)</label>
+          <input type="text" id="batchExt" placeholder="txt  (leave empty for all files)" oninput="rebuildBatch()">
+        </div>
+
+        <div id="batchOutput" style="background:var(--bg);border:1px solid var(--dim);border-radius:3px;padding:14px;font-family:var(--mono);font-size:0.78rem;color:var(--amber);white-space:pre-wrap;line-height:1.9;min-height:60px;margin-top:12px;display:none"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-purple" onclick="generateBatch()">⚡ GENERATE BATCH SCRIPT</button>
+          <button class="btn btn-dim btn-sm" onclick="copyBatch()">⎘ COPY</button>
+          <button class="btn btn-green btn-sm" onclick="downloadBatch()">↓ .SH DOWNLOAD</button>
+        </div>
+      </div>
+
+      <!-- FINAL OUTPUT -->
+      <div class="output-area">
+        <div class="oa-header">
+          <span class="oa-title">▸ FINAL OUTPUT <span id="cmdCountLabel" style="color:var(--text2);font-size:0.65rem"></span></span>
+        </div>
+        <div class="final-output" id="finalOutput">// Add a command above to generate output...</div>
+        <div class="btn-row">
+          <button class="btn btn-green" onclick="copyFinal()">⎘ COPY ALL</button>
+          <button class="btn btn-cyan" onclick="downloadScript()">↓ DOWNLOAD .SH</button>
+          <button class="btn btn-orange" onclick="copyFinal('last')">⎘ COPY LAST CMD</button>
+        </div>
+      </div>
+
+    </div>
+    <!-- /MAIN -->
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// STATE
+// =============================================
+let state = {
+  mode: 'dir',
+  chain: 'sequential',
+  flags: {},
+  commands: [],
+  batchScript: ''
+};
+
+const MODE_INFO = {
+  dir:  '<strong>DIR</strong> mode — Directory/file brute-forcing. Enumerates hidden paths, files, and directories on a web server.<br>Usage: <code>gobuster dir -u URL -w WORDLIST</code>',
+  dns:  '<strong>DNS</strong> mode — Subdomain enumeration via DNS. Brute-forces subdomains of a target domain.<br>Usage: <code>gobuster dns -d DOMAIN -w WORDLIST</code>',
+  vhost:'<strong>VHOST</strong> mode — Virtual host enumeration. Discovers virtual hosts by manipulating the Host header.<br>Usage: <code>gobuster vhost -u URL -w WORDLIST</code>',
+  fuzz: '<strong>FUZZ</strong> mode — Generic fuzzing. Replace the <code>FUZZ</code> keyword anywhere in URL, headers, or body.<br>Usage: <code>gobuster fuzz -u URL?param=FUZZ -w WORDLIST</code>',
+  s3:   '<strong>S3</strong> mode — AWS S3 bucket enumeration. Brute-forces S3 bucket names.<br>Usage: <code>gobuster s3 -w WORDLIST</code>',
+  gcs:  '<strong>GCS</strong> mode — Google Cloud Storage bucket enumeration. Brute-forces GCS bucket names.<br>Usage: <code>gobuster gcs -w WORDLIST</code>',
+  tftp: '<strong>TFTP</strong> mode — TFTP file enumeration. Brute-forces files on a TFTP server.<br>Usage: <code>gobuster tftp -s SERVER -w WORDLIST</code>',
+};
+
+// =============================================
+// INIT
+// =============================================
+window.onload = function() {
+  document.getElementById('modeInfo').innerHTML = MODE_INFO['dir'];
+  document.querySelectorAll('.code-tag').forEach(el => {
+    el.addEventListener('click', () => {
+      el.classList.toggle('active');
+      rebuildAll();
+    });
+  });
+  addCommand();
+};
+
+// =============================================
+// MODE
+// =============================================
+function setMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + mode).classList.add('active');
+  document.getElementById('modeInfo').innerHTML = MODE_INFO[mode];
+  rebuildAll();
+}
+
+// =============================================
+// CHAIN
+// =============================================
+function setChain(chain) {
+  state.chain = chain;
+  document.querySelectorAll('.chain-opt').forEach(o => o.classList.remove('active'));
+  const map = { sequential:'chain-seq', parallel:'chain-par', script:'chain-script', pipe:'chain-pipe' };
+  document.getElementById(map[chain]).classList.add('active');
+  rebuildAll();
+}
+
+// =============================================
+// TOGGLES
+// =============================================
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.ss-arrow');
+  if (body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+    arrow.classList.add('open');
+  } else {
+    body.classList.add('collapsed');
+    arrow.classList.remove('open');
+  }
+}
+
+function toggleFlag(key) {
+  state.flags[key] = !state.flags[key];
+  const el = document.getElementById('tog-' + key);
+  if (el) el.classList.toggle('on', state.flags[key]);
+  rebuildAll();
+}
+
+function updateRange(id, valId) {
+  document.getElementById(valId).textContent = document.getElementById(id).value;
+}
+
+// =============================================
+// STATUS CODES
+// =============================================
+function getActiveCodes() {
+  const codes = [];
+  document.querySelectorAll('#statusCodes .code-tag.active').forEach(el => {
+    codes.push(el.dataset.code);
+  });
+  return codes;
+}
+
+function selectAllCodes() {
+  document.querySelectorAll('#statusCodes .code-tag').forEach(el => {
+    if (el.classList.contains('c2xx') || el.classList.contains('c3xx')) {
+      el.classList.add('active');
+    }
+  });
+  rebuildAll();
+}
+
+function clearAllCodes() {
+  document.querySelectorAll('#statusCodes .code-tag').forEach(el => el.classList.remove('active'));
+  rebuildAll();
+}
+
+// =============================================
+// BUILD SINGLE COMMAND
+// =============================================
+function buildCommand(override = {}) {
+  const g = (id) => (document.getElementById(id) ? document.getElementById(id).value.trim() : '');
+  const mode = override.mode || state.mode;
+  const target = override.target || g('target');
+  const wordlist = override.wordlist || g('wordlist');
+
+  let parts = ['gobuster', mode];
+
+  // Target / domain
+  if (mode === 'dir' || mode === 'vhost' || mode === 'fuzz') {
+    if (target) parts.push(`-u "${target}"`);
+  } else if (mode === 'dns') {
+    const domain = g('dnsDomain') || target;
+    if (domain) parts.push(`-d "${domain}"`);
+  } else if (mode === 'tftp') {
+    if (target) parts.push(`-s "${target}"`);
+  }
+
+  // Wordlist
+  if (mode !== 's3' && mode !== 'gcs') {
+    if (wordlist) parts.push(`-w "${wordlist}"`);
+  } else {
+    if (wordlist) parts.push(`-w "${wordlist}"`);
+  }
+
+  // Threads
+  const threads = document.getElementById('threads').value;
+  if (threads && threads !== '10') parts.push(`-t ${threads}`);
+
+  // Timeout
+  const timeout = document.getElementById('timeout').value;
+  if (timeout && timeout !== '10') parts.push(`--timeout ${timeout}s`);
+
+  // Delay
+  const delay = document.getElementById('delay').value;
+  if (delay && delay !== '0') parts.push(`--delay ${delay}ms`);
+
+  // Status codes
+  if (mode === 'dir' || mode === 'vhost' || mode === 'fuzz') {
+    const codes = getActiveCodes();
+    if (codes.length) parts.push(`-s "${codes.join(',')}"`);
+    const blacklist = g('statusBlacklist');
+    if (blacklist) parts.push(`-b "${blacklist}"`);
+  }
+
+  // Extensions (dir mode)
+  if (mode === 'dir') {
+    const ext = g('extensions');
+    if (ext) parts.push(`-x ${ext}`);
+    const excLen = g('excludeLength');
+    if (excLen) parts.push(`--exclude-length ${excLen}`);
+    if (state.flags['f']) parts.push('-f');
+    if (state.flags['U']) parts.push('-U');
+    if (state.flags['l']) parts.push('-l');
+    if (state.flags['wildcard']) parts.push('--wildcard');
+    if (state.flags['d']) parts.push('-d');
+  }
+
+  // VHOST options
+  if (mode === 'vhost') {
+    const appendDomain = g('vhostAppend');
+    if (appendDomain) parts.push(`--append-domain "${appendDomain}"`);
+    const vhostExclude = g('vhostExclude');
+    if (vhostExclude) parts.push(`--exclude-length ${vhostExclude}`);
+    if (state.flags['dedupe']) parts.push('--dedupe');
+  }
+
+  // DNS options
+  if (mode === 'dns') {
+    const resolver = g('dnsResolver');
+    if (resolver) parts.push(`--resolver "${resolver}"`);
+    if (state.flags['c']) parts.push('-c');
+    if (state.flags['i']) parts.push('-i');
+    if (state.flags['wildcard']) parts.push('--wildcard');
+  }
+
+  // FUZZ options
+  if (mode === 'fuzz') {
+    const kw = g('fuzzKeyword');
+    const fuzzExclude = g('fuzzExclude');
+    if (fuzzExclude) parts.push(`--exclude-length ${fuzzExclude}`);
+  }
+
+  // Auth
+  const user = g('username');
+  const pass = g('password');
+  if (user && pass) parts.push(`-U "${user}" -P "${pass}"`);
+
+  // Cookie
+  const cookie = g('cookie');
+  if (cookie) parts.push(`-c "${cookie}"`);
+
+  // Proxy
+  const proxy = g('proxy');
+  if (proxy) parts.push(`--proxy "${proxy}"`);
+
+  // User-Agent
+  const ua = g('useragent');
+  if (ua) parts.push(`-a "${ua}"`);
+
+  // Headers
+  const headers = g('headers');
+  if (headers) {
+    headers.split('\n').forEach(h => {
+      h = h.trim();
+      if (h) parts.push(`-H "${h}"`);
+    });
+  }
+
+  // Output
+  const outFile = g('outputFile');
+  if (outFile) parts.push(`-o "${outFile}"`);
+  const outFmt = g('outputFormat');
+  if (outFmt) parts.push(`--format ${outFmt}`);
+
+  // Flags
+  if (state.flags['k']) parts.push('-k');
+  if (state.flags['r']) parts.push('-r');
+  if (state.flags['n']) parts.push('-n');
+  if (state.flags['e']) parts.push('-e');
+  if (state.flags['q']) parts.push('-q');
+  if (state.flags['z']) parts.push('-z');
+  if (state.flags['noerror']) parts.push('--no-error');
+
+  return parts.join(' ');
+}
+
+// =============================================
+// COMMAND CARDS
+// =============================================
+let cmdCounter = 0;
+
+function addCommand() {
+  cmdCounter++;
+  const id = 'cmd_' + cmdCounter;
+  state.commands.push({ id, mode: state.mode, override: {} });
+
+  const card = document.createElement('div');
+  card.className = 'cmd-card';
+  card.id = 'card_' + id;
+  card.innerHTML = `
+    <div class="cmd-card-header">
+      <span class="cmd-num">CMD #${cmdCounter}</span>
+      <span class="cmd-label-text">${state.mode.toUpperCase()} mode</span>
+      <div class="cmd-actions">
+        <button class="btn btn-dim btn-sm" onclick="duplicateCmd('${id}')">⎘</button>
+        <button class="btn btn-red btn-sm" onclick="removeCmd('${id}')">✕</button>
+      </div>
+    </div>
+    <div class="cmd-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:var(--mono);font-size:0.65rem;color:var(--cyan);margin-bottom:5px">OVERRIDE URL</div>
+          <input type="text" id="ov_url_${id}" placeholder="(use global)" oninput="rebuildAll()" style="width:100%">
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:0.65rem;color:var(--cyan);margin-bottom:5px">OVERRIDE WORDLIST</div>
+          <input type="text" id="ov_wl_${id}" placeholder="(use global)" oninput="rebuildAll()" style="width:100%">
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:0.65rem;color:var(--cyan);margin-bottom:5px">OVERRIDE MODE</div>
+          <select id="ov_mode_${id}" onchange="rebuildAll()" style="width:100%">
+            <option value="">(global: ${state.mode})</option>
+            <option value="dir">dir</option>
+            <option value="dns">dns</option>
+            <option value="vhost">vhost</option>
+            <option value="fuzz">fuzz</option>
+            <option value="s3">s3</option>
+            <option value="gcs">gcs</option>
+            <option value="tftp">tftp</option>
+          </select>
+        </div>
+      </div>
+      <div class="cmd-output empty" id="out_${id}">// fill target + wordlist...</div>
+    </div>
+  `;
+
+  document.getElementById('commandsArea').appendChild(card);
+  rebuildAll();
+}
+
+function removeCmd(id) {
+  state.commands = state.commands.filter(c => c.id !== id);
+  const card = document.getElementById('card_' + id);
+  if (card) card.remove();
+  rebuildAll();
+}
+
+function duplicateCmd(id) {
+  const existingCard = document.getElementById('card_' + id);
+  if (!existingCard) return;
+  const ovUrl = document.getElementById('ov_url_' + id)?.value || '';
+  const ovWl = document.getElementById('ov_wl_' + id)?.value || '';
+  const ovMode = document.getElementById('ov_mode_' + id)?.value || '';
+  addCommand();
+  // Set values on newly added cmd
+  const newCmd = state.commands[state.commands.length - 1];
+  const newId = newCmd.id;
+  setTimeout(() => {
+    if (document.getElementById('ov_url_' + newId)) document.getElementById('ov_url_' + newId).value = ovUrl;
+    if (document.getElementById('ov_wl_' + newId)) document.getElementById('ov_wl_' + newId).value = ovWl;
+    if (document.getElementById('ov_mode_' + newId)) document.getElementById('ov_mode_' + newId).value = ovMode;
+    rebuildAll();
+  }, 50);
+}
+
+function duplicateLastCmd() {
+  if (state.commands.length === 0) { addCommand(); return; }
+  const lastId = state.commands[state.commands.length - 1].id;
+  duplicateCmd(lastId);
+}
+
+function clearCommands() {
+  state.commands = [];
+  cmdCounter = 0;
+  document.getElementById('commandsArea').innerHTML = '';
+  rebuildAll();
+  showToast('✓ All commands cleared');
+}
+
+// =============================================
+// PLAIN TEXT STORAGE (for copy)
+// =============================================
+let _plainTextOutput = '';
+let _plainLines = [];
+
+// =============================================
+// REBUILD ALL
+// =============================================
+function rebuildAll() {
+  const lines = [];
+
+  state.commands.forEach((cmd, i) => {
+    const ovUrl = document.getElementById('ov_url_' + cmd.id)?.value?.trim() || '';
+    const ovWl = document.getElementById('ov_wl_' + cmd.id)?.value?.trim() || '';
+    const ovMode = document.getElementById('ov_mode_' + cmd.id)?.value || '';
+
+    const override = {};
+    if (ovUrl) override.target = ovUrl;
+    if (ovWl) override.wordlist = ovWl;
+    if (ovMode) override.mode = ovMode;
+
+    const built = buildCommand(override);
+    lines.push(built);
+
+    const outEl = document.getElementById('out_' + cmd.id);
+    if (outEl) {
+      outEl.innerHTML = syntaxHighlight(escapeHtml(built));
+      outEl.classList.remove('empty');
+    }
+  });
+
+  _plainLines = lines;
+
+  // Final combined output
+  const finalEl = document.getElementById('finalOutput');
+  if (lines.length === 0) {
+    finalEl.textContent = '// Add a command above to generate output...';
+    document.getElementById('cmdCountLabel').textContent = '';
+    _plainTextOutput = '';
+    return;
+  }
+
+  document.getElementById('cmdCountLabel').textContent = `[${lines.length} command${lines.length > 1 ? 's' : ''}]`;
+
+  let finalText = '';
+  if (state.chain === 'sequential') {
+    finalText = lines.join('\n');
+  } else if (state.chain === 'parallel') {
+    finalText = lines.join(' &\n') + ' &\nwait';
+  } else if (state.chain === 'script') {
+    finalText = '#!/bin/bash\n# Generated by GOBUSTER.GEN\n# Date: ' + new Date().toISOString() + '\n\n';
+    finalText += 'set -e\n\n';
+    lines.forEach((l, i) => {
+      finalText += `echo "[*] Running command ${i+1}/${lines.length}"\n${l}\n\n`;
+    });
+    finalText += 'echo "[+] All done!"';
+  } else if (state.chain === 'pipe') {
+    finalText = lines[0];
+    if (lines.length > 1) {
+      finalText += '\n# Note: Gobuster output can be piped:\n';
+      finalText += lines.map(l => l + ' | tee -a results.txt').join('\n');
+    }
+  }
+
+  // Store plain text for copying
+  _plainTextOutput = finalText;
+
+  // Render with syntax highlighting (HTML only for display)
+  finalEl.innerHTML = finalText.split('\n').map(l =>
+    `<span class="line">${syntaxHighlight(escapeHtml(l))}</span>`
+  ).join('\n');
+}
+
+function syntaxHighlight(cmd) {
+  if (!cmd) return cmd;
+  return cmd
+    .replace(/^(gobuster)/g, '<span style="color:var(--orange);font-weight:700">$1</span>')
+    .replace(/\b(dir|dns|vhost|fuzz|s3|gcs|tftp)\b/, '<span style="color:var(--purple)">$1</span>')
+    .replace(/( -[a-zA-Z]+| --[a-zA-Z-]+)/g, '<span style="color:var(--cyan)">$1</span>')
+    .replace(/"([^"]+)"/g, '<span style="color:var(--amber)">"$1"</span>')
+    .replace(/^(#.*)$/gm, '<span style="color:var(--text2)">$1</span>')
+    .replace(/^(echo .*)$/gm, '<span style="color:var(--green)">$1</span>')
+    .replace(/^(set -e|wait)$/gm, '<span style="color:var(--purple)">$1</span>');
+}
+
+// =============================================
+// FOLDER BATCH
+// =============================================
+function setFolder(path) {
+  document.getElementById('batchFolder').value = path;
+  document.querySelectorAll('.wl-preset').forEach(el => el.classList.remove('active'));
+  event.target.closest('.wl-preset').classList.add('active');
+  rebuildBatch();
+}
+
+function rebuildBatch() {
+  // Just update UI, actual generation on button click
+}
+
+function generateBatch() {
+  const folder = document.getElementById('batchFolder').value.trim();
+  const target = document.getElementById('target').value.trim();
+  const ext = document.getElementById('batchExt').value.trim() || 'txt';
+  const threads = document.getElementById('threads').value;
+  const extensions = document.getElementById('extensions').value.trim();
+
+  if (!folder) { showToast('⚠ Set a folder path first!'); return; }
+
+  const mode = state.mode;
+  let targetFlag = target ? `"${target}"` : '"https://TARGET.COM"';
+
+  let script = `#!/bin/bash
+# GOBUSTER BATCH SCRIPT
+# Generated by GOBUSTER.GEN
+# Date: ${new Date().toISOString()}
+# Folder: ${folder}
+# Mode: ${mode}
+# Target: ${target || '(set TARGET variable below)'}
+
+TARGET=${target ? `"${target}"` : '"https://TARGET.COM"'}
+FOLDER="${folder}"
+EXT="${ext}"
+THREADS=${threads}
+OUTPUT_DIR="./gobuster_results"
+
+mkdir -p "$OUTPUT_DIR"
+
+echo "[*] Starting GOBUSTER batch scan"
+echo "[*] Target: $TARGET"
+echo "[*] Wordlist folder: $FOLDER"
+echo "[*] Mode: ${mode}"
+echo ""
+
+WORDLISTS=$(find "$FOLDER" -maxdepth 1 -type f -name "*.${ext}" 2>/dev/null)
+
+if [ -z "$WORDLISTS" ]; then
+  echo "[!] No *.${ext} files found in $FOLDER"
+  exit 1
+fi
+
+COUNT=$(echo "$WORDLISTS" | wc -l)
+echo "[*] Found $COUNT wordlist(s)"
+echo ""
+
+CURRENT=0
+for WL in $WORDLISTS; do
+  CURRENT=$((CURRENT + 1))
+  BASENAME=$(basename "$WL" .${ext})
+  OUTFILE="$OUTPUT_DIR/${mode}_\${BASENAME}_results.txt"
+  
+  echo "[*] [$CURRENT/$COUNT] Wordlist: $WL"
+  echo "[*] Output: $OUTFILE"
+  
+  gobuster ${mode} \\`;
+
+  if (mode === 'dir' || mode === 'vhost' || mode === 'fuzz') {
+    script += `\n    -u "$TARGET" \\`;
+  } else if (mode === 'dns') {
+    script += `\n    -d "$TARGET" \\`;
+  } else if (mode === 'tftp') {
+    script += `\n    -s "$TARGET" \\`;
+  }
+
+  script += `\n    -w "$WL" \\`;
+  script += `\n    -t $THREADS \\`;
+
+  if (extensions && mode === 'dir') {
+    script += `\n    -x "${extensions}" \\`;
+  }
+
+  const codes = getActiveCodes();
+  if (codes.length && (mode === 'dir' || mode === 'vhost')) {
+    script += `\n    -s "${codes.join(',')}" \\`;
+  }
+
+  if (state.flags['k']) script += `\n    -k \\`;
+  if (state.flags['r']) script += `\n    -r \\`;
+  if (state.flags['e']) script += `\n    -e \\`;
+  if (state.flags['q']) script += `\n    -q \\`;
+
+  script += `\n    -o "$OUTFILE"
+  
+  echo "[+] Done with $WL"
+  echo ""
+done
+
+echo "[+] ALL DONE! Results in: $OUTPUT_DIR"
+echo "[*] Merging results..."
+cat "$OUTPUT_DIR"/*.txt > "$OUTPUT_DIR/merged_all.txt" 2>/dev/null
+echo "[+] Merged output: $OUTPUT_DIR/merged_all.txt"
+`;
+
+  state.batchScript = script;
+
+  const outEl = document.getElementById('batchOutput');
+  outEl.style.display = 'block';
+  outEl.innerHTML = script.split('\n').map(l => syntaxHighlight(escapeHtml(l))).join('\n');
+
+  showToast('✓ Batch script generated!');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function copyBatch() {
+  if (!state.batchScript) { generateBatch(); }
+  navigator.clipboard.writeText(state.batchScript).then(() => showToast('✓ Batch script copied!'));
+}
+
+function downloadBatch() {
+  if (!state.batchScript) generateBatch();
+  const target = document.getElementById('target').value.trim() || 'target';
+  download(state.batchScript, `gobuster_batch_${target.replace(/[^a-z0-9]/gi,'_')}.sh`);
+}
+
+// =============================================
+// COPY / DOWNLOAD
+// =============================================
+function copyFinal(which) {
+  if (!_plainTextOutput) { showToast('⚠ No commands generated!'); return; }
+  let text;
+  if (which === 'last') {
+    text = _plainLines[_plainLines.length - 1] || '';
+  } else {
+    text = _plainTextOutput;
+  }
+  navigator.clipboard.writeText(text).then(() => showToast('✓ Copied!'));
+}
+
+function downloadScript() {
+  if (!_plainTextOutput) { showToast('⚠ No commands to download!'); return; }
+  const header = `#!/bin/bash\n# Generated by GOBUSTER.GEN\n# ${new Date().toISOString()}\n\n`;
+  download(header + _plainTextOutput, 'gobuster_commands.sh');
+}
+
+function download(content, filename) {
+  const blob = new Blob([content], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  showToast('✓ Downloading ' + filename);
+}
+
+// =============================================
+// HELPERS
+// =============================================
+function setWordlist(path) {
+  document.getElementById('wordlist').value = path;
+  rebuildAll();
+  showToast('✓ Wordlist set');
+}
+
+function clearField(id) {
+  document.getElementById(id).value = '';
+  rebuildAll();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
