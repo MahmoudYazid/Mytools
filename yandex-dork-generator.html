@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ЯNDEX DORK GENERATOR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Unbounded:wght@400;700;900&display=swap');
+
+  :root {
+    --bg:    #0a0a0f;
+    --bg2:   #111118;
+    --bg3:   #16161f;
+    --border:#1e1e2e;
+    --red:   #ff3a3a;
+    --orange:#ff6c2f;
+    --yellow:#ffd60a;
+    --blue:  #5b8dee;
+    --cyan:  #00d4ff;
+    --green: #3dff9a;
+    --purple:#b06aff;
+    --white: #e8e8f0;
+    --text2: #6a6a8a;
+    --mono:  'JetBrains Mono', monospace;
+    --head:  'Unbounded', sans-serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #0f0f1a 0%, #0a0a12 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--head);
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+  }
+  .logo .ya { color: #ff3a3a; }
+  .logo .nd { color: #ff6c2f; }
+  .logo .ex { color: #ffd60a; }
+  .logo .rest { color: var(--white); opacity: 0.9; }
+  .header-sub { font-size: 0.62rem; color: var(--text2); letter-spacing: 2px; margin-top: 2px; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .engine-badge {
+    background: rgba(255,58,58,0.12);
+    border: 1px solid rgba(255,58,58,0.3);
+    color: var(--red);
+    font-size: 0.62rem;
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; height: calc(100vh - 61px); }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px;
+    min-width: 230px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-title {
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--text2);
+    padding: 14px 16px 8px;
+  }
+  .cat-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 9px 16px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .cat-btn:hover { background: var(--bg3); color: var(--white); }
+  .cat-btn.active { color: var(--cyan); border-left-color: var(--cyan); background: rgba(0,212,255,0.05); }
+  .cat-count {
+    margin-left: auto;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 0.6rem;
+    color: var(--text2);
+  }
+  .cat-btn.active .cat-count { background: rgba(0,212,255,0.15); color: var(--cyan); }
+  .sidebar-sep { height: 1px; background: var(--border); margin: 8px 0; }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+  }
+
+  /* ── OPERATOR LEGEND ── */
+  .op-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    font-size: 0.64rem;
+  }
+  .op-legend-label { color: var(--text2); letter-spacing: 2px; }
+  .op-pill {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 2px 9px;
+    border-radius: 2px;
+    border: 1px solid;
+    cursor: help;
+  }
+  .no-support {
+    margin-left: auto;
+    font-size: 0.6rem;
+    color: var(--red);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── CONTENT ── */
+  .content-area {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  /* ── CATEGORY PANEL ── */
+  .cat-panel { display: none; }
+  .cat-panel.active { display: block; }
+
+  .panel-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-icon { font-size: 1.8rem; line-height: 1; }
+  .panel-header h2 {
+    font-family: var(--head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+  .panel-header p { font-size: 0.65rem; color: var(--text2); margin-top: 3px; line-height: 1.4; }
+
+  .section-title {
+    font-size: 0.58rem;
+    letter-spacing: 3px;
+    color: var(--text2);
+    padding: 10px 0 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .check-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  /* ── DORK CARD ── */
+  .dork-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .dork-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .dork-card:hover { border-color: #2e2e44; background: var(--bg3); }
+  .dork-card.selected {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.05);
+    box-shadow: 0 0 12px rgba(0,212,255,0.08);
+  }
+
+  .sev-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.55rem;
+    padding: 1px 5px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    border: 1px solid;
+  }
+  .sev-critical { background: rgba(255,58,58,0.15); color: var(--red); border-color: rgba(255,58,58,0.3); }
+  .sev-high { background: rgba(255,214,10,0.12); color: var(--yellow); border-color: rgba(255,214,10,0.3); }
+  .sev-medium { background: rgba(0,212,255,0.08); color: var(--cyan); border-color: rgba(0,212,255,0.2); }
+  .sev-info { background: rgba(176,106,255,0.1); color: var(--purple); border-color: rgba(176,106,255,0.25); }
+
+  .card-title { font-size: 0.72rem; font-weight: 600; color: var(--white); margin-bottom: 5px; padding-right: 52px; }
+  .card-query {
+    font-size: 0.63rem;
+    color: var(--text2);
+    line-height: 1.5;
+    word-break: break-all;
+  }
+  .card-query .op-mime    { color: #ff6c2f; }
+  .card-query .op-site    { color: #ffd60a; }
+  .card-query .op-host    { color: #5b8dee; }
+  .card-query .op-rhost   { color: #b06aff; }
+  .card-query .op-url     { color: #00d4ff; }
+  .card-query .op-lang    { color: #3dff9a; }
+  .card-query .op-date    { color: #ff3a3a; }
+  .card-query .op-val     { color: var(--white); opacity: 0.75; }
+  .card-query .op-tph     { color: #3dff9a; }
+
+  .card-meta {
+    margin-top: 7px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+  }
+  .op-tag {
+    font-size: 0.55rem;
+    padding: 1px 5px;
+    border-radius: 2px;
+    border: 1px solid;
+    cursor: help;
+    opacity: 0.8;
+  }
+  .card-desc {
+    font-size: 0.6rem;
+    color: var(--text2);
+    font-style: italic;
+    margin-top: 4px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  /* ── OUTPUT ── */
+  .output-bar {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+  }
+  .output-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .output-label { font-size: 0.62rem; letter-spacing: 2px; color: var(--text2); }
+  .count-badge {
+    background: rgba(0,212,255,0.12);
+    border: 1px solid rgba(0,212,255,0.25);
+    color: var(--cyan);
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .target-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .target-label { font-size: 0.62rem; color: var(--text2); white-space: nowrap; }
+  .target-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--white);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 6px 10px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s;
+    max-width: 280px;
+  }
+  .target-input:focus { border-color: var(--cyan); }
+  .target-input::placeholder { color: var(--text2); }
+
+  .query-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    min-height: 46px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.6;
+    color: var(--text2);
+    margin-bottom: 10px;
+    word-break: break-all;
+  }
+  .query-box.has-query { color: var(--white); }
+
+  .output-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 7px 14px;
+    border-radius: 3px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .btn-cyan { background: rgba(0,212,255,0.1); border-color: var(--cyan); color: var(--cyan); }
+  .btn-cyan:hover { background: rgba(0,212,255,0.2); box-shadow: 0 0 12px rgba(0,212,255,0.15); }
+  .btn-green { background: rgba(61,255,154,0.08); border-color: var(--green); color: var(--green); }
+  .btn-green:hover { background: rgba(61,255,154,0.15); }
+  .btn-red { background: rgba(255,58,58,0.08); border-color: var(--red); color: var(--red); }
+  .btn-red:hover { background: rgba(255,58,58,0.15); }
+  .btn-dim { background: transparent; border-color: var(--border); color: var(--text2); }
+  .btn-dim:hover { border-color: #3e3e5e; color: var(--white); }
+  .btn-orange { background: rgba(255,108,47,0.1); border-color: var(--orange); color: var(--orange); }
+  .btn-orange:hover { background: rgba(255,108,47,0.2); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0,212,255,0.15);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 8px 18px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── CUSTOM BUILDER ── */
+  .custom-builder {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+  }
+  .custom-builder h3 {
+    font-family: var(--head);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    color: var(--cyan);
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 0.6rem; letter-spacing: 1px; color: var(--text2); }
+  .form-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--white);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 6px 10px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--cyan); }
+  .form-input::placeholder { color: var(--text2); }
+  .form-select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--white);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 6px 10px;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  .custom-preview {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-size: 0.7rem;
+    margin: 12px 0;
+    min-height: 36px;
+    color: var(--text2);
+    word-break: break-all;
+  }
+  .custom-preview.has-q { color: var(--white); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #2e2e44; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3e3e5e; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">
+      <span class="ya">Я</span><span class="nd">nd</span><span class="ex">ex</span>
+      <span class="rest"> DORK GENERATOR</span>
+    </div>
+    <div class="header-sub">YANDEX-NATIVE SEARCH OPERATORS • OSINT & BUG BOUNTY</div>
+  </div>
+  <div class="header-right">
+    <span class="engine-badge">⚠ YANDEX ONLY</span>
+    <span style="font-size:0.62rem;color:var(--text2)">Google dorks ≠ Yandex dorks</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">CATEGORIES</div>
+    <button class="cat-btn active" onclick="showCat('files')" id="btn-files">📄 File Types <span class="cat-count" id="cnt-files">0</span></button>
+    <button class="cat-btn" onclick="showCat('sensitive')" id="btn-sensitive">🔑 Sensitive Files <span class="cat-count" id="cnt-sensitive">0</span></button>
+    <button class="cat-btn" onclick="showCat('admin')" id="btn-admin">🛠 Admin Panels <span class="cat-count" id="cnt-admin">0</span></button>
+    <button class="cat-btn" onclick="showCat('dirs')" id="btn-dirs">📂 Directories <span class="cat-count" id="cnt-dirs">0</span></button>
+    <button class="cat-btn" onclick="showCat('errors')" id="btn-errors">⚡ Error Pages <span class="cat-count" id="cnt-errors">0</span></button>
+    <button class="cat-btn" onclick="showCat('databases')" id="btn-databases">🗄 Databases <span class="cat-count" id="cnt-databases">0</span></button>
+    <button class="cat-btn" onclick="showCat('cloud')" id="btn-cloud">☁ Cloud Storage <span class="cat-count" id="cnt-cloud">0</span></button>
+    <button class="cat-btn" onclick="showCat('network')" id="btn-network">🌐 Network/IoT <span class="cat-count" id="cnt-network">0</span></button>
+    <button class="cat-btn" onclick="showCat('vulns')" id="btn-vulns">💉 Web Vulns <span class="cat-count" id="cnt-vulns">0</span></button>
+    <button class="cat-btn" onclick="showCat('creds')" id="btn-creds">🔓 Credentials <span class="cat-count" id="cnt-creds">0</span></button>
+    <button class="cat-btn" onclick="showCat('recon')" id="btn-recon">🔍 Recon <span class="cat-count" id="cnt-recon">0</span></button>
+    <div class="sidebar-sep"></div>
+    <button class="cat-btn" onclick="showCat('custom')" id="btn-custom">⚙ Custom Builder <span class="cat-count" id="cnt-custom">0</span></button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- Operator Legend -->
+    <div class="op-legend">
+      <span class="op-legend-label">YANDEX OPS:</span>
+      <span class="op-pill" style="border-color:#ff6c2f;color:#ff6c2f" title="mime: is Yandex's equivalent of Google's filetype:. Works for pdf, doc, xls, ppt, txt, html and more">mime: → file type</span>
+      <span class="op-pill" style="border-color:#ffd60a;color:#ffd60a" title="site: restricts results to a specific domain — works same as Google">site: → domain</span>
+      <span class="op-pill" style="border-color:#5b8dee;color:#5b8dee" title="host: finds all pages on a specific hostname. Use exact domain without www.">host: → hostname</span>
+      <span class="op-pill" style="border-color:#b06aff;color:#b06aff" title="rhost: is reverse host — written TLD-first. rhost:com.example.* finds all subdomains. Yandex-exclusive!">rhost: → reverse host</span>
+      <span class="op-pill" style="border-color:#00d4ff;color:#00d4ff" title="url: searches for a specific URL or URL pattern. Use * as wildcard at the end of the URL path">url: → URL path</span>
+      <span class="op-pill" style="border-color:#3dff9a;color:#3dff9a" title="lang: filters by page language. lang:en for English, lang:ru for Russian, lang:de for German, etc.">lang: → language</span>
+      <span class="op-pill" style="border-color:#ff3a3a;color:#ff3a3a" title="date: filters by date. Use date:>20230101 for after Jan 2023, date:20230101..20231231 for a range">date: → date range</span>
+      <div class="no-support">
+        <span>❌ intitle: inurl: intext: filetype: = NOT supported in Yandex</span>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- FILE TYPES -->
+      <div class="cat-panel active" id="cat-files">
+        <div class="panel-header">
+          <div class="panel-icon">📄</div>
+          <div>
+            <h2>FILE TYPES</h2>
+            <p>Use <strong>mime:</strong> — Yandex's version of filetype:. Finds files by type indexed across the web.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('files')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('files')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-files"></div>
+      </div>
+
+      <!-- SENSITIVE FILES -->
+      <div class="cat-panel" id="cat-sensitive">
+        <div class="panel-header">
+          <div class="panel-icon">🔑</div>
+          <div>
+            <h2>SENSITIVE FILES</h2>
+            <p>Configs, keys, credentials. Uses <strong>mime:</strong> + keyword phrases and <strong>url:</strong> for path targeting.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('sensitive')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('sensitive')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-sensitive"></div>
+      </div>
+
+      <!-- ADMIN PANELS -->
+      <div class="cat-panel" id="cat-admin">
+        <div class="panel-header">
+          <div class="panel-icon">🛠</div>
+          <div>
+            <h2>ADMIN PANELS</h2>
+            <p>Yandex has no intitle: — use the panel name as a plain keyword phrase + <strong>url:</strong> or <strong>site:</strong> to narrow results.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('admin')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('admin')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-admin"></div>
+      </div>
+
+      <!-- DIRECTORIES -->
+      <div class="cat-panel" id="cat-dirs">
+        <div class="panel-header">
+          <div class="panel-icon">📂</div>
+          <div>
+            <h2>OPEN DIRECTORIES</h2>
+            <p>No intitle: in Yandex — use <strong>"index of"</strong> or <strong>"parent directory"</strong> as plain text with <strong>url:</strong> path targeting.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('dirs')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('dirs')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-dirs"></div>
+      </div>
+
+      <!-- ERRORS -->
+      <div class="cat-panel" id="cat-errors">
+        <div class="panel-header">
+          <div class="panel-icon">⚡</div>
+          <div>
+            <h2>ERROR PAGES</h2>
+            <p>Error messages as plain keyword phrases. Yandex indexes body content without needing intext: operator.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('errors')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('errors')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-errors"></div>
+      </div>
+
+      <!-- DATABASES -->
+      <div class="cat-panel" id="cat-databases">
+        <div class="panel-header">
+          <div class="panel-icon">🗄</div>
+          <div>
+            <h2>DATABASE EXPOSURE</h2>
+            <p>DB admin panels and dump files using <strong>mime:</strong>, panel name keywords, and <strong>url:</strong> path patterns.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('databases')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('databases')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-databases"></div>
+      </div>
+
+      <!-- CLOUD -->
+      <div class="cat-panel" id="cat-cloud">
+        <div class="panel-header">
+          <div class="panel-icon">☁</div>
+          <div>
+            <h2>CLOUD STORAGE</h2>
+            <p><strong>site:</strong> for cloud storage domains. Yandex indexes international cloud services including AWS, Azure, and GCP.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('cloud')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('cloud')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-cloud"></div>
+      </div>
+
+      <!-- NETWORK -->
+      <div class="cat-panel" id="cat-network">
+        <div class="panel-header">
+          <div class="panel-icon">🌐</div>
+          <div>
+            <h2>NETWORK / IoT DEVICES</h2>
+            <p>Device admin panels via product name keywords + <strong>url:</strong> path. Yandex often indexes more CIS/Eastern EU devices than Google.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('network')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('network')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-network"></div>
+      </div>
+
+      <!-- VULNS -->
+      <div class="cat-panel" id="cat-vulns">
+        <div class="panel-header">
+          <div class="panel-icon">💉</div>
+          <div>
+            <h2>WEB VULNERABILITIES</h2>
+            <p>Parameter-based vuln patterns use <strong>url:</strong> + <strong>mime:</strong>. Yandex indexes .ru/.by/.kz/.ua domains others miss.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('vulns')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('vulns')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-vulns"></div>
+      </div>
+
+      <!-- CREDENTIALS -->
+      <div class="cat-panel" id="cat-creds">
+        <div class="panel-header">
+          <div class="panel-icon">🔓</div>
+          <div>
+            <h2>CREDENTIALS</h2>
+            <p>Credential strings as exact phrase searches with <strong>mime:</strong> file type filtering. Yandex-native syntax only.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('creds')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('creds')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-creds"></div>
+      </div>
+
+      <!-- RECON -->
+      <div class="cat-panel" id="cat-recon">
+        <div class="panel-header">
+          <div class="panel-icon">🔍</div>
+          <div>
+            <h2>RECON</h2>
+            <p><strong>rhost:</strong> for subdomain enumeration — a Yandex-exclusive operator not available in Google. Also <strong>host:</strong>, <strong>url:</strong>, <strong>mime:</strong>.</p>
+          </div>
+        </div>
+        <div class="check-row">
+          <button class="btn btn-dim" onclick="selectAll('recon')">SELECT ALL</button>
+          <button class="btn btn-dim" onclick="deselectAll('recon')">DESELECT ALL</button>
+        </div>
+        <div class="dork-grid" id="dork-recon"></div>
+      </div>
+
+      <!-- CUSTOM BUILDER -->
+      <div class="cat-panel" id="cat-custom">
+        <div class="panel-header">
+          <div class="panel-icon">⚙</div>
+          <div>
+            <h2>CUSTOM BUILDER</h2>
+            <p>Build Yandex dorks manually with all native operators. Remember: no intitle:/inurl:/intext:/filetype: — Yandex uses its own syntax.</p>
+          </div>
+        </div>
+        <div class="custom-builder">
+          <h3>YANDEX QUERY BUILDER</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>KEYWORD / EXACT PHRASE</label>
+              <input class="form-input" id="cb_kw" placeholder='"password" OR "admin"' oninput="buildCustom()">
+            </div>
+            <div class="form-group">
+              <label>mime: (FILE TYPE)</label>
+              <input class="form-input" id="cb_mime" placeholder="pdf / sql / txt / doc" oninput="buildCustom()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>site: (DOMAIN)</label>
+              <input class="form-input" id="cb_site" placeholder="example.com" oninput="buildCustom()">
+            </div>
+            <div class="form-group">
+              <label>host: (HOSTNAME)</label>
+              <input class="form-input" id="cb_host" placeholder="example.com" oninput="buildCustom()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>rhost: (REVERSE HOST — e.g. com.example.*)</label>
+              <input class="form-input" id="cb_rhost" placeholder="com.example.*" oninput="buildCustom()">
+            </div>
+            <div class="form-group">
+              <label>url: (URL PATH PATTERN)</label>
+              <input class="form-input" id="cb_url" placeholder="/admin/* OR /wp-login.php" oninput="buildCustom()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>lang: (LANGUAGE)</label>
+              <select class="form-select" id="cb_lang" onchange="buildCustom()">
+                <option value="">-- any --</option>
+                <option value="en">en — English</option>
+                <option value="ru">ru — Russian</option>
+                <option value="de">de — German</option>
+                <option value="fr">fr — French</option>
+                <option value="es">es — Spanish</option>
+                <option value="tr">tr — Turkish</option>
+                <option value="uk">uk — Ukrainian</option>
+                <option value="ar">ar — Arabic</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>date: (DATE FILTER)</label>
+              <input class="form-input" id="cb_date" placeholder=">20230101 or 20230101..20231231" oninput="buildCustom()">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label>EXCLUDE TERM (-term)</label>
+            <input class="form-input" id="cb_excl" placeholder="github -github.com" oninput="buildCustom()">
+          </div>
+          <div class="custom-preview" id="custom_preview">// Fill fields above to build your Yandex dork...</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-cyan" onclick="copyCustom()">⎘ COPY</button>
+            <button class="btn btn-orange" onclick="openCustom()">↗ OPEN IN YANDEX</button>
+            <button class="btn btn-dim" onclick="clearCustom()">✕ CLEAR</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+
+    <!-- OUTPUT BAR -->
+    <div class="output-bar">
+      <div class="output-header">
+        <span class="output-label">▶ FINAL QUERY</span>
+        <span class="count-badge" id="selCount" style="display:none">0 selected</span>
+      </div>
+      <div class="target-wrap">
+        <span class="target-label">TARGET DOMAIN:</span>
+        <input class="target-input" id="targetInput" placeholder="example.com (optional)" oninput="rebuildOutput()">
+        <span class="target-label" style="margin-left:8px">LANG FILTER:</span>
+        <select class="form-select" id="langFilter" onchange="rebuildOutput()" style="width:120px;font-size:0.65rem;padding:5px 8px">
+          <option value="">— any —</option>
+          <option value="en">English</option>
+          <option value="ru">Russian</option>
+          <option value="de">German</option>
+          <option value="fr">French</option>
+          <option value="tr">Turkish</option>
+          <option value="uk">Ukrainian</option>
+        </select>
+      </div>
+      <div class="query-box" id="outputBox">// Select dorks above to generate Yandex query...</div>
+      <div class="output-actions">
+        <button class="btn btn-cyan" onclick="copyOutput()">⎘ COPY ALL</button>
+        <button class="btn btn-orange" onclick="openYandex()">↗ OPEN IN YANDEX</button>
+        <button class="btn btn-green" onclick="exportTxt()">↓ EXPORT .TXT</button>
+        <button class="btn btn-red" onclick="clearAll()">✕ CLEAR ALL</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div>
+
+<div id="toast"></div>
+
+<script>
+// =============================================
+// YANDEX DORK DATABASE
+// Operators: mime: | site: | host: | rhost: | url: | lang: | date:
+// NOT available: intitle: inurl: intext: filetype:
+// =============================================
+const DORKS = {
+
+  files: [
+    // mime: is Yandex's file type operator (like Google's filetype:)
+    { id:'f1',  title:'SQL Dumps',          q:'mime:sql "INSERT INTO"',                     sev:'critical', ops:['mime'],        desc:'mime: finds .sql files; "INSERT INTO" confirms it\'s a real dump' },
+    { id:'f2',  title:'ENV Files',          q:'mime:txt ".env" "DB_PASSWORD"',              sev:'critical', ops:['mime'],        desc:'mime:txt because .env isn\'t a recognized MIME type — search as text file with keywords' },
+    { id:'f3',  title:'PDF Documents',      q:'mime:pdf "confidential"',                    sev:'info',     ops:['mime'],        desc:'mime:pdf for PDF files; keyword filters for sensitive content' },
+    { id:'f4',  title:'Excel Spreadsheets', q:'mime:xlsx "password"',                       sev:'medium',   ops:['mime'],        desc:'mime:xlsx finds Excel files containing the word password' },
+    { id:'f5',  title:'Word Documents',     q:'mime:docx "confidential"',                   sev:'medium',   ops:['mime'],        desc:'mime:docx finds Word docs with confidential content' },
+    { id:'f6',  title:'XML Config Files',   q:'mime:xml "password"',                        sev:'medium',   ops:['mime'],        desc:'mime:xml for XML files containing password fields' },
+    { id:'f7',  title:'Text Files w/ Creds',q:'mime:txt "password" "username"',             sev:'high',     ops:['mime'],        desc:'mime:txt for plain text files containing both password and username' },
+    { id:'f8',  title:'Log Files',          q:'mime:txt "error" "exception" site:{TARGET}', sev:'high',     ops:['mime','site'], desc:'mime:txt for logs; site: restricts to target domain' },
+    { id:'f9',  title:'ZIP Archives',       q:'mime:zip site:{TARGET}',                     sev:'high',     ops:['mime','site'], desc:'mime:zip finds zip archives; site: restricts to target' },
+    { id:'f10', title:'CSV Data Files',     q:'mime:csv "email" "phone"',                   sev:'medium',   ops:['mime'],        desc:'mime:csv finds CSV files containing email and phone columns' },
+    { id:'f11', title:'PowerShell Scripts', q:'mime:txt "powershell" "Invoke-Expression"',  sev:'high',     ops:['mime'],        desc:'mime:txt because .ps1 is served as text; keyword confirms PowerShell content' },
+    { id:'f12', title:'Shell Scripts',      q:'mime:txt "#!/bin/bash" "password"',           sev:'critical', ops:['mime'],        desc:'mime:txt for shell scripts containing hardcoded passwords' },
+    { id:'f13', title:'YAML Config',        q:'mime:txt "apiVersion" "password"',            sev:'high',     ops:['mime'],        desc:'mime:txt for YAML files (Yandex has no mime:yaml); keywords confirm k8s/docker content' },
+    { id:'f14', title:'PHP Source w/ Creds',q:'mime:php "DB_PASSWORD" OR "db_pass"',        sev:'critical', ops:['mime'],        desc:'mime:php for PHP files containing hardcoded DB credentials' },
+    { id:'f15', title:'Private Key Files',  q:'mime:txt "BEGIN PRIVATE KEY" OR "BEGIN RSA PRIVATE KEY"', sev:'critical', ops:['mime'], desc:'mime:txt for PEM/key files; exact phrase "BEGIN PRIVATE KEY" is a reliable fingerprint' },
+  ],
+
+  sensitive: [
+    { id:'s1',  title:'wp-config.php',      q:'url:wp-config.php',                          sev:'critical', ops:['url'],         desc:'url: finds pages where the URL contains wp-config.php — direct path match' },
+    { id:'s2',  title:'wp-config backup',   q:'url:wp-config.bak OR url:wp-config.old OR url:wp-config.txt', sev:'critical', ops:['url'], desc:'url: targets WP config backup filenames in the URL path' },
+    { id:'s3',  title:'.git/config',        q:'url:"/.git/config"',                         sev:'high',     ops:['url'],         desc:'url: finds pages where the URL path is exactly /.git/config' },
+    { id:'s4',  title:'Git Repo Exposed',   q:'"index of /.git"',                           sev:'critical', ops:[],              desc:'Plain phrase — no operator needed; Yandex searches full body text by default' },
+    { id:'s5',  title:'.env w/ DB Creds',   q:'url:".env" "DB_PASSWORD"',                   sev:'critical', ops:['url'],         desc:'url: for .env filename in path; exact phrase confirms credentials in content' },
+    { id:'s6',  title:'AWS Credentials',    q:'"aws_access_key_id" "aws_secret_access_key"',sev:'critical', ops:[],              desc:'Exact phrase pair — Yandex body search finds these together on exposed config pages' },
+    { id:'s7',  title:'Terraform State',    q:'url:terraform.tfstate OR mime:txt "aws_secret_access_key"', sev:'critical', ops:['url','mime'], desc:'url: for filename match OR mime:txt + phrase for body content match' },
+    { id:'s8',  title:'Docker Compose',     q:'url:docker-compose.yml "password"',          sev:'critical', ops:['url'],         desc:'url: targets the docker-compose.yml filename; phrase confirms password present' },
+    { id:'s9',  title:'SSH Private Key',    q:'"BEGIN RSA PRIVATE KEY" OR "BEGIN OPENSSH PRIVATE KEY"', sev:'critical', ops:[], desc:'Exact phrase search — these strings appear verbatim in exposed key files' },
+    { id:'s10', title:'.htpasswd',          q:'url:".htpasswd"',                            sev:'critical', ops:['url'],         desc:'url: finds .htpasswd files served directly — Apache password hash file' },
+    { id:'s11', title:'Django Secret Key',  q:'"SECRET_KEY" "django" mime:txt OR mime:php', sev:'critical', ops:['mime'],        desc:'Exact phrase + mime: to find Django configs with SECRET_KEY exposed' },
+    { id:'s12', title:'JWT Secret',         q:'"JWT_SECRET" OR "jwt_secret"',               sev:'critical', ops:[],              desc:'Plain phrase — Yandex will find pages/files containing this exact string' },
+    { id:'s13', title:'SFTP Config',        q:'url:sftp-config.json',                       sev:'critical', ops:['url'],         desc:'url: finds sftp-config.json files — contains FTP server credentials (Sublime SFTP plugin)' },
+    { id:'s14', title:'Ansible Vault',      q:'"ANSIBLE_VAULT;1" mime:txt',                 sev:'critical', ops:['mime'],        desc:'mime:txt + vault header phrase — Ansible vault files stored as text' },
+    { id:'s15', title:'Kubernetes Secret',  q:'"apiVersion: v1" "kind: Secret" "data:"',    sev:'critical', ops:[],              desc:'Three-part phrase finds K8s Secret manifests accidentally exposed in search index' },
+  ],
+
+  admin: [
+    // Yandex: no intitle: — use product name as keyword + url: for path
+    { id:'a1',  title:'phpMyAdmin',         q:'"phpMyAdmin" url:phpmyadmin',                sev:'critical', ops:['url'],         desc:'Product name as keyword + url: for path — Yandex equivalent of Google\'s inurl: + intitle:' },
+    { id:'a2',  title:'Adminer DB Admin',   q:'"Adminer" url:adminer.php',                  sev:'critical', ops:['url'],         desc:'Product name keyword + url: for the adminer.php filename in path' },
+    { id:'a3',  title:'WordPress Login',    q:'url:wp-login.php',                           sev:'medium',   ops:['url'],         desc:'url: finds wp-login.php in the URL path — no extra keywords needed' },
+    { id:'a4',  title:'WordPress Admin',    q:'url:wp-admin',                               sev:'medium',   ops:['url'],         desc:'url: finds URLs containing /wp-admin/ path' },
+    { id:'a5',  title:'Joomla Admin',       q:'url:"/administrator/" "Joomla"',             sev:'medium',   ops:['url'],         desc:'url: for the /administrator/ path; keyword "Joomla" confirms it\'s the right CMS' },
+    { id:'a6',  title:'Drupal Login',       q:'url:"/user/login" "Drupal"',                 sev:'medium',   ops:['url'],         desc:'url: for Drupal login path; keyword "Drupal" confirms the CMS' },
+    { id:'a7',  title:'Jenkins CI',         q:'"Dashboard [Jenkins]"',                      sev:'critical', ops:[],              desc:'Exact page title phrase — Yandex indexes page titles so this still works as keyword' },
+    { id:'a8',  title:'Grafana Dashboard',  q:'"Grafana" url:"/login"',                     sev:'high',     ops:['url'],         desc:'Product name keyword + url: for /login path to find Grafana login pages' },
+    { id:'a9',  title:'Kibana',             q:'"Kibana" url:"/app/kibana"',                 sev:'high',     ops:['url'],         desc:'Product name keyword + url: for Kibana\'s known app path' },
+    { id:'a10', title:'Portainer',          q:'"Portainer" url:"/#!/auth"',                 sev:'critical', ops:['url'],         desc:'Product name + url: for Portainer\'s Angular routing auth path' },
+    { id:'a11', title:'Tomcat Manager',     q:'"Apache Tomcat" url:"/manager/html"',        sev:'critical', ops:['url'],         desc:'Product name keyword + url: for the Tomcat web manager path' },
+    { id:'a12', title:'Webmin',             q:'"Webmin" "login to Webmin"',                 sev:'high',     ops:[],              desc:'Two keyword phrases — Yandex body search finds Webmin login pages reliably' },
+    { id:'a13', title:'phpinfo()',          q:'"PHP Version" "php.ini" "System"',           sev:'high',     ops:[],              desc:'Three phrases that always appear together on phpinfo() pages — no operator needed' },
+    { id:'a14', title:'cPanel',             q:'"cPanel" "Log in" url:"/login"',             sev:'high',     ops:['url'],         desc:'Product keyword + login phrase + url: for path — cPanel no longer uses port 2082/2083 in URLs' },
+    { id:'a15', title:'Weblogic Console',   q:'"Oracle WebLogic Server" url:"/console/"',   sev:'critical', ops:['url'],         desc:'Product name keyword + url: for /console/ path — WebLogic admin interface' },
+    { id:'a16', title:'SonarQube',          q:'"SonarQube" "Log in" url:"/sessions/new"',   sev:'high',     ops:['url'],         desc:'Product name + phrase + url: for SonarQube\'s login route' },
+    { id:'a17', title:'GitLab Login',       q:'"GitLab" url:"/users/sign_in"',              sev:'high',     ops:['url'],         desc:'Product name + url: for GitLab\'s sign-in path — finds self-hosted instances' },
+    { id:'a18', title:'Jira',              q:'"Jira" url:"/login.jsp"',                     sev:'medium',   ops:['url'],         desc:'Product name keyword + url: for Jira\'s JSP login page path' },
+    { id:'a19', title:'Confluence',         q:'"Confluence" url:"/login.action"',            sev:'medium',   ops:['url'],         desc:'Product name + url: for Confluence\'s login action path' },
+    { id:'a20', title:'MikroTik Router',    q:'"RouterOS" "MikroTik" url:"/winbox"',        sev:'high',     ops:['url'],         desc:'Two product keywords + url: for Winbox web path — MikroTik management interface' },
+  ],
+
+  dirs: [
+    { id:'d1',  title:'Open Directory Root',    q:'"index of /"',                               sev:'high',     ops:[],      desc:'Classic open directory phrase — Yandex body search finds these without intitle: operator' },
+    { id:'d2',  title:'Open Dir: /backup',      q:'"index of" "/backup"',                       sev:'critical', ops:[],      desc:'Two keyword phrases — Yandex finds pages containing both "index of" and "/backup"' },
+    { id:'d3',  title:'Open Dir: /admin',       q:'"index of" "/admin"',                        sev:'high',     ops:[],      desc:'Open directory containing /admin — plain keyword search works in Yandex' },
+    { id:'d4',  title:'Open Dir: /config',      q:'"index of" "/config"',                       sev:'critical', ops:[],      desc:'Open directory containing /config — Yandex indexes directory listings reliably' },
+    { id:'d5',  title:'Open Dir: /uploads',     q:'"index of" "/uploads"',                      sev:'high',     ops:[],      desc:'Open directory containing /uploads — may reveal user-uploaded files' },
+    { id:'d6',  title:'Open Dir: /db',          q:'"index of" "/db"',                           sev:'critical', ops:[],      desc:'Open directory containing /db — may directly list database files' },
+    { id:'d7',  title:'Open Dir: /.git',        q:'"index of /.git"',                           sev:'critical', ops:[],      desc:'Exposed .git directory listing — allows full source code download' },
+    { id:'d8',  title:'Open Dir: /.ssh',        q:'"index of /.ssh"',                           sev:'critical', ops:[],      desc:'Exposed .ssh directory — may contain private keys and authorized_keys' },
+    { id:'d9',  title:'Parent Directory',       q:'"parent directory"',                         sev:'high',     ops:[],      desc:'Finds Apache-style open directory listings showing "Parent Directory" link' },
+    { id:'d10', title:'Open Dir: /logs',        q:'"index of" "/logs"',                         sev:'high',     ops:[],      desc:'Open directory containing /logs — may expose application and server logs' },
+    { id:'d11', title:'Open Dir: /private',     q:'"index of" "/private"',                      sev:'critical', ops:[],      desc:'Open directory named /private — ironically often contains sensitive data' },
+    { id:'d12', title:'Open Dir: /keys',        q:'"index of" "/keys"',                         sev:'critical', ops:[],      desc:'Open directory named /keys — may contain SSH, SSL, or API keys' },
+    { id:'d13', title:'Apache Default Page',    q:'"Apache HTTP Server Test Page" "It works!"', sev:'info',     ops:[],      desc:'Apache default test page — server is running but no content configured' },
+    { id:'d14', title:'Nginx Default Page',     q:'"Welcome to nginx"',                         sev:'info',     ops:[],      desc:'Nginx default page — server running, no content configured yet' },
+    { id:'d15', title:'IIS Default Page',       q:'"IIS Windows Server" "Welcome"',             sev:'info',     ops:[],      desc:'IIS default page — identifies Windows Server with IIS running' },
+    { id:'d16', title:'Open Dir: /src',         q:'"index of" "/src"',                          sev:'high',     ops:[],      desc:'Open source code directory — may expose uncompiled application source' },
+    { id:'d17', title:'Open Dir: /api',         q:'"index of" "/api"',                          sev:'high',     ops:[],      desc:'Open API directory listing — reveals API endpoint structure' },
+  ],
+
+  errors: [
+    { id:'e1',  title:'PHP Fatal Error',        q:'"Fatal error:" "on line"',                   sev:'high',     ops:[],  desc:'PHP fatal error with file path disclosure — plain phrase, no operator needed in Yandex' },
+    { id:'e2',  title:'MySQL Syntax Error',     q:'"You have an error in your SQL syntax"',     sev:'critical', ops:[],  desc:'Classic MySQL error — indicates potential SQL injection; Yandex indexes body content' },
+    { id:'e3',  title:'MSSQL Error',            q:'"Unclosed quotation mark" "incorrect syntax near"', sev:'critical', ops:[], desc:'MSSQL error message pair — both strings together = SQL injection indicator' },
+    { id:'e4',  title:'Oracle DB Error',        q:'"ORA-" "error in"',                          sev:'critical', ops:[],  desc:'Oracle error code prefix + error phrase — finds Oracle DB error disclosure' },
+    { id:'e5',  title:'Python Traceback',       q:'"Traceback (most recent call last):"',        sev:'high',     ops:[],  desc:'Python stack trace — reveals file paths and internal structure' },
+    { id:'e6',  title:'Java Exception',         q:'"java.sql.SQLException" OR "java.lang.NullPointerException"', sev:'high', ops:[], desc:'Java exception class names — found in verbose error pages' },
+    { id:'e7',  title:'ASP.NET Error',          q:'"Server Error in" "Stack Trace:"',           sev:'high',     ops:[],  desc:'ASP.NET verbose error page with stack trace — reveals internal paths' },
+    { id:'e8',  title:'Laravel Debug Page',     q:'"Whoops! There was an error." "Laravel"',    sev:'high',     ops:[],  desc:'Laravel Whoops error page — debug mode on in production' },
+    { id:'e9',  title:'Django Debug Page',      q:'"A server error occurred. Please contact the administrator." "Django"', sev:'high', ops:[], desc:'Django debug error — reveals settings and installed apps when DEBUG=True' },
+    { id:'e10', title:'Ruby on Rails Error',    q:'"RuntimeError" "app/controllers"',           sev:'high',     ops:[],  desc:'Rails error with controller path — reveals application structure' },
+    { id:'e11', title:'PHP LFI Indicator',      q:'"Warning: include(" "Failed opening"',       sev:'high',     ops:[],  desc:'PHP include() failure — indicates potential LFI vulnerability' },
+    { id:'e12', title:'Node.js Stack Trace',    q:'"at Object.<anonymous>" "node_modules"',     sev:'high',     ops:[],  desc:'Node.js error stack — reveals server-side file paths and module names' },
+  ],
+
+  databases: [
+    { id:'db1', title:'phpMyAdmin Panel',       q:'"phpMyAdmin" url:phpmyadmin',                sev:'critical', ops:['url'],       desc:'Product keyword + url: path — phpMyAdmin has a well-known URL pattern' },
+    { id:'db2', title:'Adminer Panel',          q:'"Adminer" url:adminer.php',                  sev:'critical', ops:['url'],       desc:'Product keyword + url: for adminer.php filename' },
+    { id:'db3', title:'SQL Dump Files',         q:'mime:sql "CREATE TABLE" "INSERT INTO"',      sev:'critical', ops:['mime'],      desc:'mime:sql for SQL files; two phrases confirm it\'s a real database dump' },
+    { id:'db4', title:'MongoDB Web UI',         q:'"MongoDB" "Databases" "Collections"',        sev:'critical', ops:[],            desc:'Three MongoDB-specific terms — web UI always shows Databases and Collections text' },
+    { id:'db5', title:'Elasticsearch API',      q:'"cluster_name" "cluster_uuid" "number_of_nodes"', sev:'critical', ops:[],       desc:'Three Elasticsearch JSON response keys — finds exposed _cluster/health endpoints' },
+    { id:'db6', title:'CouchDB UI',             q:'"Apache CouchDB" "Welcome" "version"',       sev:'critical', ops:[],            desc:'CouchDB welcome response contains all three of these terms together' },
+    { id:'db7', title:'InfluxDB UI',            q:'"InfluxDB" "Measurement"',                   sev:'high',     ops:[],            desc:'InfluxDB UI keyword pair — finds the InfluxDB web interface' },
+    { id:'db8', title:'JDBC Connection String', q:'"jdbc:mysql://" OR "jdbc:postgresql://"',    sev:'critical', ops:[],            desc:'JDBC connection string prefixes — appear in error pages and config files' },
+    { id:'db9', title:'MS Access DB File',      q:'mime:mdb',                                   sev:'critical', ops:['mime'],      desc:'mime:mdb finds MS Access database files directly — entire DB in one file' },
+    { id:'db10',title:'DB Schema File',         q:'mime:sql "CREATE DATABASE"',                 sev:'critical', ops:['mime'],      desc:'mime:sql + CREATE DATABASE phrase — finds schema/DDL dump files' },
+    { id:'db11',title:'DB Connection in Config',q:'"DB_HOST" "DB_USER" "DB_PASS"',              sev:'critical', ops:[],            desc:'Three database config keys together — .env or config file exposure' },
+    { id:'db12',title:'Redis Commander UI',     q:'"Redis Commander" url:"/apiv2/server/info"', sev:'critical', ops:['url'],       desc:'Product name + url: for Redis Commander\'s API endpoint' },
+    { id:'db13',title:'OWA/Exchange Login',     q:'"Outlook Web App" url:"/owa/"',              sev:'high',     ops:['url'],       desc:'Product keyword + url: for /owa/ path — Outlook Web Access portal' },
+  ],
+
+  cloud: [
+    { id:'c1',  title:'AWS S3 Bucket',          q:'site:s3.amazonaws.com',                      sev:'critical', ops:['site'],      desc:'site: restricts to s3.amazonaws.com — finds all indexed S3 bucket content' },
+    { id:'c2',  title:'AWS S3 SQL Files',        q:'site:s3.amazonaws.com mime:sql',             sev:'critical', ops:['site','mime'],desc:'site: for S3 + mime:sql to find SQL dumps stored in S3 buckets' },
+    { id:'c3',  title:'Azure Blob Storage',      q:'site:blob.core.windows.net',                 sev:'high',     ops:['site'],      desc:'site: restricts to Azure Blob Storage domain — finds indexed blob content' },
+    { id:'c4',  title:'Google Cloud Storage',    q:'site:storage.googleapis.com',                sev:'high',     ops:['site'],      desc:'site: for GCS domain — finds publicly readable Google Cloud Storage objects' },
+    { id:'c5',  title:'Firebase Realtime DB',    q:'site:firebaseio.com',                        sev:'critical', ops:['site'],      desc:'site: for Firebase — finds misconfigured realtime databases with public read access' },
+    { id:'c6',  title:'DigitalOcean Spaces',     q:'site:digitaloceanspaces.com',                sev:'high',     ops:['site'],      desc:'site: for DO Spaces domain — DigitalOcean\'s S3-compatible object storage' },
+    { id:'c7',  title:'AWS Key Pattern',         q:'"AKIA" mime:txt',                            sev:'critical', ops:['mime'],      desc:'AWS access keys always start with "AKIA" — mime:txt to find key files' },
+    { id:'c8',  title:'Heroku Apps w/ Admin',    q:'site:herokuapp.com url:"/admin"',            sev:'medium',   ops:['site','url'],desc:'site: for Heroku + url: for /admin path — finds admin panels on Heroku deployments' },
+    { id:'c9',  title:'Vercel Deployments',      q:'site:vercel.app url:"/api"',                 sev:'info',     ops:['site','url'],desc:'site: for Vercel + url: for /api path — finds exposed API routes on Vercel' },
+    { id:'c10', title:'Netlify Deployments',     q:'site:netlify.app',                           sev:'info',     ops:['site'],      desc:'site: for Netlify apps — finds all indexed Netlify deployments' },
+    { id:'c11', title:'Terraform w/ AWS Keys',   q:'mime:txt "aws_secret_access_key" "aws_access_key_id"', sev:'critical', ops:['mime'], desc:'mime:txt for state files + both AWS key variable names together' },
+  ],
+
+  network: [
+    { id:'n1',  title:'IP Cameras',             q:'"Network Camera" url:"/view/index.shtml"',   sev:'critical', ops:['url'],      desc:'Camera product phrase + url: for the specific camera web interface path' },
+    { id:'n2',  title:'Axis IP Cameras',        q:'"AXIS" url:"/axis-cgi/"',                    sev:'critical', ops:['url'],      desc:'Brand keyword + url: for Axis camera CGI path — finds exposed Axis cameras' },
+    { id:'n3',  title:'DVR/NVR Systems',        q:'"DVR" "Login" url:"/login"',                 sev:'critical', ops:['url'],      desc:'Device type + login keyword + url: for path — no port numbers (Yandex ignores them)' },
+    { id:'n4',  title:'Cisco Router Admin',     q:'"Cisco" "Password" url:"/level/15/exec/"',   sev:'critical', ops:['url'],      desc:'Brand + password keyword + url: for Cisco IOS exec path' },
+    { id:'n5',  title:'Cisco SMB Routers',      q:'"Cisco Small Business" "Log In"',            sev:'critical', ops:[],           desc:'Product name phrase + login text — Yandex finds these without intitle: operator' },
+    { id:'n6',  title:'MikroTik RouterOS',      q:'"RouterOS" "MikroTik"',                      sev:'high',     ops:[],           desc:'Two brand keywords together — identifies MikroTik router admin pages' },
+    { id:'n7',  title:'pfSense Firewall',       q:'"pfSense" "Username" "Password"',            sev:'critical', ops:[],           desc:'Brand name + login form field keywords — finds pfSense login pages' },
+    { id:'n8',  title:'Netgear Router',         q:'"NETGEAR" url:"/start.htm"',                 sev:'high',     ops:['url'],      desc:'Brand keyword + url: for Netgear\'s default start page path' },
+    { id:'n9',  title:'Linksys Router',         q:'"Linksys" url:"/setup.cgi"',                 sev:'high',     ops:['url'],      desc:'Brand keyword + url: for Linksys setup CGI path' },
+    { id:'n10', title:'Palo Alto Firewall',     q:'"Palo Alto Networks" "Log In"',              sev:'critical', ops:[],           desc:'Brand name + login text — Palo Alto firewall admin pages' },
+    { id:'n11', title:'SCADA/HMI Systems',      q:'"SCADA" "login" OR "HMI" "login"',           sev:'critical', ops:[],           desc:'Industrial system keywords with login — Yandex indexes more SCADA than Google' },
+    { id:'n12', title:'Printer Admin',          q:'"HP LaserJet" url:"/hp/device/info_configuration.html" OR "Xerox" "admin"', sev:'medium', ops:['url'], desc:'Brand keyword + url: for HP\'s config page OR Xerox + admin keyword' },
+    { id:'n13', title:'FreePBX/Asterisk',       q:'"FreePBX" url:"/admin" OR "Asterisk Management" url:"/admin"', sev:'high', ops:['url'], desc:'VoIP system names + url: for /admin path — finds VoIP management interfaces' },
+    { id:'n14', title:'OpenWRT Router',         q:'"OpenWrt" "Authorization Required"',         sev:'high',     ops:[],           desc:'Brand name + auth page phrase — OpenWRT routers with exposed admin' },
+    { id:'n15', title:'Home Assistant',         q:'"Home Assistant" "dashboard"',               sev:'high',     ops:[],           desc:'Smart home platform keywords — finds exposed Home Assistant instances' },
+  ],
+
+  vulns: [
+    { id:'v1',  title:'SQLi Param: id=',        q:'url:"?id=" site:{TARGET}',                   sev:'critical', ops:['url','site'], desc:'url: finds URLs with ?id= parameter; site: restricts to target domain — potential SQLi' },
+    { id:'v2',  title:'SQLi Param: cat=',       q:'url:"?cat=" site:{TARGET}',                  sev:'critical', ops:['url','site'], desc:'url: for ?cat= GET parameter — common SQLi vector in category pages' },
+    { id:'v3',  title:'LFI Param: page=',       q:'url:"?page=" site:{TARGET}',                 sev:'critical', ops:['url','site'], desc:'url: for ?page= parameter — high LFI risk parameter name' },
+    { id:'v4',  title:'LFI Param: file=',       q:'url:"?file=" site:{TARGET}',                 sev:'critical', ops:['url','site'], desc:'url: for ?file= parameter — extremely high LFI risk' },
+    { id:'v5',  title:'LFI Param: include=',    q:'url:"?include=" site:{TARGET}',              sev:'critical', ops:['url','site'], desc:'url: for ?include= parameter — directly named include = LFI candidate' },
+    { id:'v6',  title:'SSRF Param: url=',       q:'url:"?url=" site:{TARGET}',                  sev:'critical', ops:['url','site'], desc:'url: for ?url= parameter — most common SSRF vector' },
+    { id:'v7',  title:'SSRF Param: target=',    q:'url:"?target=" site:{TARGET}',               sev:'critical', ops:['url','site'], desc:'url: for ?target= parameter — SSRF candidate in proxy/redirect features' },
+    { id:'v8',  title:'Open Redirect: next=',   q:'url:"?next=" site:{TARGET}',                 sev:'high',     ops:['url','site'], desc:'url: for ?next= redirect parameter — open redirect phishing vector' },
+    { id:'v9',  title:'Open Redirect: return=', q:'url:"?return=" site:{TARGET}',               sev:'high',     ops:['url','site'], desc:'url: for ?return= redirect parameter — open redirect vector' },
+    { id:'v10', title:'XSS Param: search=',     q:'url:"?search=" site:{TARGET}',               sev:'high',     ops:['url','site'], desc:'url: for ?search= parameter — common XSS sink in search features' },
+    { id:'v11', title:'IDOR Param: user_id=',   q:'url:"?user_id=" site:{TARGET}',              sev:'critical', ops:['url','site'], desc:'url: for ?user_id= parameter — IDOR candidate if not validated' },
+    { id:'v12', title:'IDOR Param: order_id=',  q:'url:"?order_id=" site:{TARGET}',             sev:'critical', ops:['url','site'], desc:'url: for ?order_id= — horizontal privilege escalation risk' },
+    { id:'v13', title:'GraphQL Endpoint',       q:'url:"/graphql" OR url:"/graphiql"',          sev:'high',     ops:['url'],        desc:'url: for GraphQL endpoint paths — finds exposed GraphQL APIs and playgrounds' },
+    { id:'v14', title:'Swagger API Docs',       q:'url:"/swagger-ui" OR url:"/api-docs"',       sev:'high',     ops:['url'],        desc:'url: for Swagger UI paths — API documentation exposed publicly' },
+    { id:'v15', title:'Debug Mode On',          q:'"Debug mode is on" OR "DEBUG=True"',         sev:'high',     ops:[],             desc:'Plain phrase search — debug mode indicators found in page body text' },
+    { id:'v16', title:'File Upload Page',       q:'url:"/upload" "Choose file" site:{TARGET}',  sev:'high',     ops:['url','site'], desc:'url: for /upload path + "Choose file" text + site: for target domain' },
+    { id:'v17', title:'Command Injection ?cmd=',q:'url:"?cmd=" site:{TARGET}',                  sev:'critical', ops:['url','site'], desc:'url: for ?cmd= parameter — direct command injection candidate' },
+    { id:'v18', title:'Path Traversal Param',   q:'url:"?path=" site:{TARGET}',                 sev:'critical', ops:['url','site'], desc:'url: for ?path= parameter — path traversal candidate' },
+  ],
+
+  creds: [
+    { id:'cr1', title:'Password in Log',        q:'"password=" "username=" mime:txt',           sev:'critical', ops:['mime'],  desc:'mime:txt for log/text files; both phrases confirms credentials are in content' },
+    { id:'cr2', title:'Credentials in Config',  q:'"password" "username" mime:cfg OR mime:conf',sev:'critical', ops:['mime'],  desc:'mime: for config files; two keywords confirm credential exposure' },
+    { id:'cr3', title:'Cleartext Passwords SQL',q:'"INSERT INTO" "password" mime:sql',          sev:'critical', ops:['mime'],  desc:'mime:sql for SQL dumps; INSERT INTO + password = cleartext credentials in DB' },
+    { id:'cr4', title:'Slack Bot Token',        q:'"xoxb-" mime:txt OR "xoxb-"',               sev:'critical', ops:['mime'],  desc:'Slack bot token prefix "xoxb-" — very specific string, plain search works too' },
+    { id:'cr5', title:'Stripe Live Key',        q:'"sk_live_"',                                 sev:'critical', ops:[],        desc:'Stripe live secret key prefix — extremely specific, plain search finds all occurrences' },
+    { id:'cr6', title:'Twilio SID',             q:'"TWILIO_ACCOUNT_SID" "TWILIO_AUTH_TOKEN"',  sev:'critical', ops:[],        desc:'Both Twilio credential variables together — found in .env files indexed by Yandex' },
+    { id:'cr7', title:'Google API Key',         q:'"AIzaSy"',                                   sev:'high',     ops:[],        desc:'Google API key prefix "AIzaSy" — very distinctive, plain phrase search is enough' },
+    { id:'cr8', title:'LDAP in Config',         q:'"ldap" "password" mime:cfg OR mime:conf',    sev:'critical', ops:['mime'],  desc:'mime: for config files; LDAP + password confirms LDAP credential exposure' },
+    { id:'cr9', title:'SMTP Credentials',       q:'"SMTP_PASSWORD" OR "MAIL_PASSWORD" "MAIL_HOST"', sev:'critical', ops:[], desc:'SMTP credential variable names — found in .env files and config files' },
+    { id:'cr10',title:'FTP Credentials',        q:'"FTP_PASSWORD" "FTP_HOST" mime:txt',         sev:'critical', ops:['mime'],  desc:'FTP credential pair in text files — sftp-config.json, .env, deploy scripts' },
+    { id:'cr11',title:'PayPal Credentials',     q:'"PAYPAL_CLIENT_ID" "PAYPAL_SECRET"',         sev:'critical', ops:[],        desc:'PayPal API key pair — both together in indexed config/env files' },
+    { id:'cr12',title:'Bearer Token in Log',    q:'"Authorization: Bearer" mime:txt',           sev:'critical', ops:['mime'],  desc:'mime:txt for log files + Authorization header phrase = exposed tokens' },
+    { id:'cr13',title:'Private Key Header',     q:'"BEGIN PRIVATE KEY" OR "BEGIN RSA PRIVATE KEY"', sev:'critical', ops:[],   desc:'PEM private key header phrases — Yandex body search finds exposed key files' },
+    { id:'cr14',title:'DB Connection String',   q:'"mysql://" "password" OR "postgresql://" "password"', sev:'critical', ops:[], desc:'Database connection string prefixes with password in URL or nearby text' },
+  ],
+
+  recon: [
+    // rhost: is Yandex-exclusive — reverse hostname, TLD first
+    { id:'r1',  title:'Subdomain Enum',         q:'rhost:{RTARGET}.*',                          sev:'info',     ops:['rhost'],     desc:'rhost: is Yandex-EXCLUSIVE! Reverse host finds all subdomains. Enter target as com.example.*' },
+    { id:'r2',  title:'All Pages on Domain',    q:'host:{TARGET}',                              sev:'info',     ops:['host'],      desc:'host: finds all indexed pages on the target domain — like site: but Yandex-native' },
+    { id:'r3',  title:'robots.txt',             q:'url:robots.txt site:{TARGET}',               sev:'info',     ops:['url','site'], desc:'url: for filename + site: for target — finds robots.txt revealing hidden paths' },
+    { id:'r4',  title:'sitemap.xml',            q:'url:sitemap.xml site:{TARGET}',              sev:'info',     ops:['url','site'], desc:'url: for sitemap + site: for target — reveals complete site structure' },
+    { id:'r5',  title:'security.txt',           q:'url:"/.well-known/security.txt" site:{TARGET}', sev:'info',  ops:['url','site'], desc:'url: for security.txt path + site: for target — bug bounty contact info' },
+    { id:'r6',  title:'PDF on Target Domain',   q:'mime:pdf site:{TARGET}',                     sev:'info',     ops:['mime','site'],desc:'mime:pdf + site: — finds all PDFs indexed on the target domain' },
+    { id:'r7',  title:'Office Docs on Domain',  q:'mime:xlsx OR mime:docx site:{TARGET}',       sev:'medium',   ops:['mime','site'],desc:'mime: for Office files + site: — finds spreadsheets/docs on the target' },
+    { id:'r8',  title:'Login Pages on Domain',  q:'url:login site:{TARGET}',                    sev:'info',     ops:['url','site'], desc:'url: for login keyword in path + site: — maps all login endpoints on target' },
+    { id:'r9',  title:'API Endpoints',          q:'url:"/api/" site:{TARGET}',                  sev:'medium',   ops:['url','site'], desc:'url: for /api/ path + site: — finds all API routes indexed on target' },
+    { id:'r10', title:'Admin Paths',            q:'url:"/admin" site:{TARGET}',                 sev:'high',     ops:['url','site'], desc:'url: for /admin + site: — finds admin interfaces on the target domain' },
+    { id:'r11', title:'Network Topology PDFs',  q:'"network diagram" OR "network topology" mime:pdf', sev:'high', ops:['mime'],   desc:'mime:pdf + phrase — finds network architecture PDFs inadvertently indexed' },
+    { id:'r12', title:'Staff/Team Pages',       q:'"our team" OR "staff directory" site:{TARGET}', sev:'info',  ops:['site'],      desc:'Employee listing phrases + site: — useful for social engineering recon' },
+    { id:'r13', title:'Russian TLD Enum',       q:'rhost:ru.{RTARGET}.*',                       sev:'info',     ops:['rhost'],     desc:'rhost: for .ru TLD enumeration — Yandex\'s rhost: is especially powerful for Russian domains' },
+    { id:'r14', title:'Config Files on Domain', q:'mime:cfg site:{TARGET} OR mime:conf site:{TARGET}', sev:'critical', ops:['mime','site'], desc:'mime: for config files + site: — finds all configuration files on the target' },
+    { id:'r15', title:'All SQL Files on Domain',q:'mime:sql site:{TARGET}',                     sev:'critical', ops:['mime','site'],desc:'mime:sql + site: — finds all SQL files indexed on the target (backups, exports)' },
+  ],
+};
+
+// ── STATE ──
+const selected = new Set();
+let currentCat = 'files';
+
+// ── INIT ──
+function init() {
+  Object.keys(DORKS).forEach(cat => {
+    const grid = document.getElementById('dork-' + cat);
+    if (!grid) return;
+    DORKS[cat].forEach(d => grid.appendChild(makeCard(d, cat)));
+    updateCount(cat);
+  });
+}
+
+function makeCard(dork, cat) {
+  const div = document.createElement('div');
+  div.className = 'dork-card';
+  div.id = 'card-' + dork.id;
+
+  const sevClass = { critical:'sev-critical', high:'sev-high', medium:'sev-medium', info:'sev-info' }[dork.sev] || 'sev-info';
+
+  // Build operator badges
+  const opInfo = {
+    mime:  { color:'#ff6c2f', label:'mime:' },
+    site:  { color:'#ffd60a', label:'site:' },
+    host:  { color:'#5b8dee', label:'host:' },
+    rhost: { color:'#b06aff', label:'rhost:' },
+    url:   { color:'#00d4ff', label:'url:' },
+    lang:  { color:'#3dff9a', label:'lang:' },
+    date:  { color:'#ff3a3a', label:'date:' },
+  };
+  const opBadges = (dork.ops || []).map(op => {
+    const info = opInfo[op];
+    if (!info) return '';
+    return `<span class="op-tag" style="border-color:${info.color};color:${info.color}" title="Uses ${info.label} operator">${info.label}</span>`;
+  }).join('');
+
+  div.innerHTML = `
+    <span class="sev-badge ${sevClass}">${dork.sev.toUpperCase()}</span>
+    <div class="card-title">${dork.title}</div>
+    <div class="card-query">${formatQ(dork.q)}</div>
+    <div class="card-meta">${opBadges}</div>
+    ${dork.desc ? `<div class="card-desc" title="${dork.desc}">ⓘ ${dork.desc}</div>` : ''}
+  `;
+
+  div.onclick = () => toggle(dork.id, dork.q, div);
+  return div;
+}
+
+function formatQ(q) {
+  return q
+    .replace(/(mime:|site:|host:|rhost:|url:|lang:|date:)/g, (m) => {
+      const cls = { 'mime:':'op-mime','site:':'op-site','host:':'op-host','rhost:':'op-rhost','url:':'op-url','lang:':'op-lang','date:':'op-date' }[m] || '';
+      return `<span class="${cls}">${m}</span>`;
+    })
+    .replace(/"([^"]+)"/g, '<span class="op-val">"$1"</span>')
+    .replace(/\{TARGET\}/g, '<span class="op-tph">{TARGET}</span>')
+    .replace(/\{RTARGET\}/g, '<span class="op-tph">{RTARGET}</span>');
+}
+
+// ── TOGGLE ──
+function toggle(id, rawQ, el) {
+  if (selected.has(id)) {
+    selected.delete(id);
+    el.classList.remove('selected');
+  } else {
+    selected.add(id);
+    el.classList.add('selected');
+  }
+  updateCount(el.dataset.cat);
+  rebuildOutput();
+}
+
+function updateCount(cat) {
+  const grid = document.getElementById('dork-' + cat);
+  if (!grid) return;
+  const total = grid.querySelectorAll('.dork-card').length;
+  const sel = grid.querySelectorAll('.dork-card.selected').length;
+  const el = document.getElementById('cnt-' + cat);
+  if (el) el.textContent = sel > 0 ? `${sel}/${total}` : total;
+}
+
+function selectAll(cat) {
+  const grid = document.getElementById('dork-' + cat);
+  if (!grid) return;
+  grid.querySelectorAll('.dork-card').forEach(card => {
+    const id = card.id.replace('card-','');
+    selected.add(id);
+    card.classList.add('selected');
+  });
+  updateCount(cat);
+  rebuildOutput();
+}
+
+function deselectAll(cat) {
+  const grid = document.getElementById('dork-' + cat);
+  if (!grid) return;
+  grid.querySelectorAll('.dork-card').forEach(card => {
+    const id = card.id.replace('card-','');
+    selected.delete(id);
+    card.classList.remove('selected');
+  });
+  updateCount(cat);
+  rebuildOutput();
+}
+
+// ── REBUILD OUTPUT ──
+function rebuildOutput() {
+  const target = document.getElementById('targetInput').value.trim();
+  const lang = document.getElementById('langFilter').value;
+
+  const queries = [];
+  selected.forEach(id => {
+    let q = findDork(id);
+    if (!q) return;
+    // Replace {TARGET} placeholder
+    q = q.replace(/\{TARGET\}/g, target || 'TARGET.COM');
+    // rhost: target written in reverse: com.example.* -> needs TLD first
+    const rhost = target ? target.split('.').reverse().join('.') : 'RHOST';
+    q = q.replace(/\{RTARGET\}/g, rhost);
+    queries.push(q);
+  });
+
+  const selBadge = document.getElementById('selCount');
+  if (queries.length > 0) {
+    selBadge.textContent = queries.length + ' selected';
+    selBadge.style.display = 'inline-block';
+  } else {
+    selBadge.style.display = 'none';
+  }
+
+  const box = document.getElementById('outputBox');
+  if (queries.length === 0) {
+    box.innerHTML = '// Select dorks above to generate Yandex query...';
+    box.classList.remove('has-query');
+    return;
+  }
+
+  let combined = queries.join(' OR ');
+  if (lang) combined += ` lang:${lang}`;
+  box.innerHTML = formatQ(combined);
+  box.classList.add('has-query');
+}
+
+function findDork(id) {
+  for (const cat of Object.values(DORKS)) {
+    const d = cat.find(x => x.id === id);
+    if (d) return d.q;
+  }
+  return null;
+}
+
+function getRawOutput() {
+  const target = document.getElementById('targetInput').value.trim();
+  const lang = document.getElementById('langFilter').value;
+  const queries = [];
+  selected.forEach(id => {
+    let q = findDork(id);
+    if (!q) return;
+    const rhost = target ? target.split('.').reverse().join('.') : 'RHOST';
+    q = q.replace(/\{TARGET\}/g, target || 'TARGET.COM').replace(/\{RTARGET\}/g, rhost);
+    queries.push(q);
+  });
+  let combined = queries.join(' OR ');
+  if (lang) combined += ` lang:${lang}`;
+  return combined;
+}
+
+// ── ACTIONS ──
+function copyOutput() {
+  const t = getRawOutput();
+  if (!t || t.includes('Select dorks')) { showToast('⚠ No query generated'); return; }
+  navigator.clipboard.writeText(t).then(() => showToast('✓ Copied to clipboard!'));
+}
+
+function openYandex() {
+  const t = getRawOutput();
+  if (!t) { showToast('⚠ No query to open'); return; }
+  window.open('https://yandex.com/search/?text=' + encodeURIComponent(t), '_blank');
+}
+
+function exportTxt() {
+  const t = getRawOutput();
+  if (!t) { showToast('⚠ Nothing to export'); return; }
+  const blob = new Blob([t], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'yandex_dorks.txt';
+  a.click();
+  showToast('✓ Exported!');
+}
+
+function clearAll() {
+  selected.clear();
+  document.querySelectorAll('.dork-card.selected').forEach(c => c.classList.remove('selected'));
+  Object.keys(DORKS).forEach(cat => updateCount(cat));
+  rebuildOutput();
+  showToast('✓ Cleared');
+}
+
+// ── CUSTOM BUILDER ──
+function buildCustom() {
+  const kw    = document.getElementById('cb_kw').value.trim();
+  const mime  = document.getElementById('cb_mime').value.trim();
+  const site  = document.getElementById('cb_site').value.trim();
+  const host  = document.getElementById('cb_host').value.trim();
+  const rhost = document.getElementById('cb_rhost').value.trim();
+  const url   = document.getElementById('cb_url').value.trim();
+  const lang  = document.getElementById('cb_lang').value;
+  const date  = document.getElementById('cb_date').value.trim();
+  const excl  = document.getElementById('cb_excl').value.trim();
+
+  const parts = [];
+  if (kw)    parts.push(kw);
+  if (mime)  parts.push(`mime:${mime}`);
+  if (site)  parts.push(`site:${site}`);
+  if (host)  parts.push(`host:${host}`);
+  if (rhost) parts.push(`rhost:${rhost}`);
+  if (url)   parts.push(`url:${url.includes(' ') ? '"'+url+'"' : url}`);
+  if (lang)  parts.push(`lang:${lang}`);
+  if (date)  parts.push(`date:${date}`);
+  if (excl)  parts.push(`-${excl}`);
+
+  const q = parts.join(' ');
+  const prev = document.getElementById('custom_preview');
+  if (q) {
+    prev.innerHTML = formatQ(q);
+    prev.classList.add('has-q');
+  } else {
+    prev.textContent = '// Fill fields above to build your Yandex dork...';
+    prev.classList.remove('has-q');
+  }
+}
+
+function getCustomRaw() {
+  const kw    = document.getElementById('cb_kw').value.trim();
+  const mime  = document.getElementById('cb_mime').value.trim();
+  const site  = document.getElementById('cb_site').value.trim();
+  const host  = document.getElementById('cb_host').value.trim();
+  const rhost = document.getElementById('cb_rhost').value.trim();
+  const url   = document.getElementById('cb_url').value.trim();
+  const lang  = document.getElementById('cb_lang').value;
+  const date  = document.getElementById('cb_date').value.trim();
+  const excl  = document.getElementById('cb_excl').value.trim();
+  const parts = [];
+  if (kw)    parts.push(kw);
+  if (mime)  parts.push(`mime:${mime}`);
+  if (site)  parts.push(`site:${site}`);
+  if (host)  parts.push(`host:${host}`);
+  if (rhost) parts.push(`rhost:${rhost}`);
+  if (url)   parts.push(`url:${url.includes(' ') ? '"'+url+'"' : url}`);
+  if (lang)  parts.push(`lang:${lang}`);
+  if (date)  parts.push(`date:${date}`);
+  if (excl)  parts.push(`-${excl}`);
+  return parts.join(' ');
+}
+
+function copyCustom() {
+  const t = getCustomRaw();
+  if (!t) { showToast('⚠ Nothing to copy'); return; }
+  navigator.clipboard.writeText(t).then(() => showToast('✓ Copied!'));
+}
+
+function openCustom() {
+  const t = getCustomRaw();
+  if (!t) { showToast('⚠ Nothing to open'); return; }
+  window.open('https://yandex.com/search/?text=' + encodeURIComponent(t), '_blank');
+}
+
+function clearCustom() {
+  ['cb_kw','cb_mime','cb_site','cb_host','cb_rhost','cb_url','cb_date','cb_excl'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('cb_lang').value = '';
+  buildCustom();
+}
+
+// ── UI ──
+function showCat(cat) {
+  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('cat-' + cat).classList.add('active');
+  document.getElementById('btn-' + cat).classList.add('active');
+  currentCat = cat;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+init();
+</script>
+</body>
+</html>
