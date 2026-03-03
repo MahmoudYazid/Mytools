@@ -376,6 +376,64 @@
   .dork-query .val { color: var(--yellow); }
   .dork-query .target-ph { color: var(--green); }
 
+  .dork-meta {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .op-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .op-badge {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    padding: 1px 6px;
+    border-radius: 2px;
+    border: 1px solid;
+    letter-spacing: 0.5px;
+    cursor: help;
+    opacity: 0.85;
+  }
+
+  .dork-desc {
+    font-size: 0.65rem;
+    color: var(--text2);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
+    font-style: italic;
+  }
+
+  /* OPERATOR LEGEND */
+  .op-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 16px;
+    margin-bottom: 18px;
+    font-size: 0.68rem;
+  }
+  .op-legend-label { color: var(--text2); letter-spacing: 1px; margin-right: 4px; }
+  .op-legend-item {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 2px 9px;
+    border-radius: 2px;
+    border: 1px solid;
+    cursor: default;
+  }
+
   .dork-badge {
     position: absolute;
     top: 8px;
@@ -646,6 +704,17 @@
 
     <!-- CONTENT -->
     <div class="content" id="mainContent">
+
+      <!-- OPERATOR LEGEND (always visible) -->
+      <div class="op-legend">
+        <span class="op-legend-label">OPERATORS:</span>
+        <span class="op-legend-item" style="border-color:#ff9f43;color:#ff9f43" title="Search by file extension — use when you know the file type (.sql, .env, .cfg, .log)">filetype: → file extension</span>
+        <span class="op-legend-item" style="border-color:#00e5ff;color:#00e5ff" title="Keyword must be in the URL path or filename — use for specific paths like /admin/ or filenames like wp-config.php">inurl: → in URL path</span>
+        <span class="op-legend-item" style="border-color:#c77dff;color:#c77dff" title="Keyword must be in the page's HTML title tag — best for admin panels & login pages which always show the product name in the title">intitle: → page title tag</span>
+        <span class="op-legend-item" style="border-color:#39ff7a;color:#39ff7a" title="Keyword must appear in the page body content — use for error messages, credentials, config values that appear in the page text">intext: → page body</span>
+        <span class="op-legend-item" style="border-color:#ffaa00;color:#ffaa00" title="Restrict results to a specific domain — use for cloud services (s3.amazonaws.com) or specific platforms (github.com)">site: → domain scope</span>
+        <span style="color:var(--red);font-size:0.62rem;margin-left:4px" title="Google does NOT index port numbers in URLs. inurl:8080 or inurl:9200 return ZERO results — always use intitle: or intext: instead">⚠ inurl:PORT# = broken!</span>
+      </div>
 
       <!-- FILE TYPES -->
       <div class="category-panel active" id="cat-fileTypes">
@@ -1056,8 +1125,8 @@ const DORKS = {
     { id:'a2', title:'Login Page', q:'inurl:login', sev:'info', desc:'Generic login pages' },
     { id:'a3', title:'WordPress Admin', q:'inurl:wp-admin', sev:'medium', desc:'WordPress admin panel' },
     { id:'a4', title:'WordPress Login', q:'inurl:wp-login.php', sev:'medium', desc:'WordPress login page' },
-    { id:'a5', title:'cPanel Login', q:'inurl:2082 OR inurl:2083 intitle:"cPanel"', sev:'high', desc:'cPanel hosting panel' },
-    { id:'a6', title:'Webmin', q:'inurl:10000 intitle:"Webmin"', sev:'high', desc:'Webmin server admin' },
+    { id:'a5', title:'cPanel Login', q:'intitle:"cPanel" intext:"Log in"', sev:'high', desc:'cPanel hosting panel — intitle: because panel name is always in page title' },
+    { id:'a6', title:'Webmin', q:'intitle:"Webmin" intext:"login to Webmin"', sev:'high', desc:'Webmin admin — intitle: for panel name; Google does NOT index port numbers in inurl:' },
     { id:'a7', title:'PHPMyAdmin', q:'inurl:phpmyadmin', sev:'critical', desc:'phpMyAdmin DB admin' },
     { id:'a8', title:'Adminer', q:'inurl:adminer.php', sev:'critical', desc:'Adminer DB admin' },
     { id:'a9', title:'Drupal Admin', q:'inurl:/user/login intitle:"Drupal"', sev:'medium', desc:'Drupal admin login' },
@@ -1065,22 +1134,22 @@ const DORKS = {
     { id:'a11', title:'Magento Admin', q:'inurl:/admin intitle:"Magento"', sev:'medium', desc:'Magento admin panel' },
     { id:'a12', title:'Django Admin', q:'inurl:/admin intitle:"Django administration"', sev:'medium', desc:'Django admin panel' },
     { id:'a13', title:'Laravel Admin', q:'inurl:/nova OR inurl:/horizon intitle:"Laravel"', sev:'medium', desc:'Laravel admin tools' },
-    { id:'a14', title:'Grafana Login', q:'inurl:3000 intitle:"Grafana"', sev:'high', desc:'Grafana dashboard' },
-    { id:'a15', title:'Kibana', q:'inurl:5601 intitle:"Kibana"', sev:'high', desc:'Kibana log analytics' },
-    { id:'a16', title:'Jenkins', q:'inurl:8080 intitle:"Dashboard [Jenkins]"', sev:'critical', desc:'Jenkins CI panel' },
+    { id:'a14', title:'Grafana Login', q:'intitle:"Grafana" intext:"Sign in"', sev:'high', desc:'Grafana dashboard — intitle: because panel name is in page title; inurl:3000 does NOT work (Google ignores ports)' },
+    { id:'a15', title:'Kibana', q:'intitle:"Kibana" intext:"Loading Kibana"', sev:'high', desc:'Kibana analytics — intitle: for panel name; inurl:5601 does NOT work in Google' },
+    { id:'a16', title:'Jenkins', q:'intitle:"Dashboard [Jenkins]"', sev:'critical', desc:'Jenkins CI — intitle: ONLY, the title is unique enough; inurl:8080 does NOT work (Google ignores ports)' },
     { id:'a17', title:'Jira Admin', q:'inurl:jira intitle:"Jira"', sev:'medium', desc:'Atlassian Jira' },
     { id:'a18', title:'Confluence Admin', q:'inurl:confluence intitle:"Confluence"', sev:'medium', desc:'Atlassian Confluence' },
-    { id:'a19', title:'SonarQube', q:'inurl:9000 intitle:"SonarQube"', sev:'high', desc:'SonarQube code quality' },
-    { id:'a20', title:'Portainer', q:'inurl:9000 intitle:"Portainer"', sev:'critical', desc:'Docker Portainer admin' },
-    { id:'a21', title:'Rancher', q:'inurl:8443 intitle:"Rancher"', sev:'critical', desc:'Kubernetes Rancher UI' },
-    { id:'a22', title:'Hadoop Admin', q:'inurl:50070 intitle:"Hadoop"', sev:'high', desc:'Hadoop NameNode admin' },
+    { id:'a19', title:'SonarQube', q:'intitle:"SonarQube" intext:"Log in"', sev:'high', desc:'SonarQube — intitle: for panel name in title; inurl:9000 does NOT work (Google ignores ports)' },
+    { id:'a20', title:'Portainer', q:'intitle:"Portainer" intext:"Username"', sev:'critical', desc:'Docker Portainer — intitle: for panel name; inurl:9000 does NOT work in Google' },
+    { id:'a21', title:'Rancher', q:'intitle:"Rancher" intext:"Log In"', sev:'critical', desc:'Kubernetes Rancher UI — intitle: for panel name; inurl:8443 does NOT work (Google ignores ports)' },
+    { id:'a22', title:'Hadoop Admin', q:'intitle:"Hadoop" intext:"NameNode"', sev:'high', desc:'Hadoop NameNode — intitle: for service name; inurl:50070 does NOT work in Google' },
     { id:'a23', title:'Tomcat Admin', q:'inurl:/manager/html intitle:"Apache Tomcat"', sev:'critical', desc:'Tomcat web manager' },
     { id:'a24', title:'phpinfo()', q:'intitle:"phpinfo()" intext:"PHP Version"', sev:'high', desc:'PHP info page disclosed' },
     { id:'a25', title:'Control Panel Generic', q:'intitle:"control panel" inurl:admin', sev:'medium', desc:'Generic control panels' },
     { id:'a26', title:'Weblogic Console', q:'inurl:/console intitle:"Oracle WebLogic"', sev:'critical', desc:'WebLogic admin console' },
     { id:'a27', title:'JBoss Admin', q:'inurl:/jmx-console OR inurl:/web-console intitle:"JBoss"', sev:'critical', desc:'JBoss management console' },
-    { id:'a28', title:'GlassFish Admin', q:'inurl:4848 intitle:"GlassFish"', sev:'high', desc:'GlassFish server admin' },
-    { id:'a29', title:'Redis Admin', q:'intitle:"Redis" inurl:8001', sev:'critical', desc:'Redis web admin' },
+    { id:'a28', title:'GlassFish Admin', q:'intitle:"GlassFish Server Administration Console"', sev:'high', desc:'GlassFish — intitle: ONLY, unique title; inurl:4848 does NOT work (Google ignores ports)' },
+    { id:'a29', title:'Redis Admin', q:'intitle:"Redis Commander" OR intitle:"phpRedisAdmin"', sev:'critical', desc:'Redis web admin — intitle: for panel name; inurl:8001 does NOT work in Google' },
     { id:'a30', title:'CMS Made Simple', q:'inurl:admin/login.php intitle:"CMS Made Simple"', sev:'medium', desc:'CMS Made Simple admin' },
   ],
 
@@ -1134,17 +1203,17 @@ const DORKS = {
     { id:'db1', title:'phpMyAdmin', q:'inurl:phpmyadmin intitle:"phpMyAdmin"', sev:'critical', desc:'phpMyAdmin interface' },
     { id:'db2', title:'Adminer', q:'inurl:adminer filetype:php', sev:'critical', desc:'Adminer DB manager' },
     { id:'db3', title:'SQL Dumps', q:'filetype:sql intext:"INSERT INTO" intext:"CREATE TABLE"', sev:'critical', desc:'SQL database dumps' },
-    { id:'db4', title:'MongoDB Exposed', q:'intitle:"MongoDB" "Databases" inurl:28017', sev:'critical', desc:'Exposed MongoDB web UI' },
-    { id:'db5', title:'CouchDB Exposed', q:'intitle:"CouchDB" inurl:5984', sev:'critical', desc:'CouchDB admin interface' },
-    { id:'db6', title:'Elasticsearch', q:'intitle:"Elasticsearch" inurl:9200', sev:'critical', desc:'Elasticsearch admin' },
-    { id:'db7', title:'Redis Web', q:'intitle:"Redis" inurl:6379', sev:'critical', desc:'Redis exposed' },
-    { id:'db8', title:'Cassandra', q:'intitle:"Cassandra" inurl:8080', sev:'critical', desc:'Cassandra admin' },
+    { id:'db4', title:'MongoDB Web UI', q:'intitle:"MongoDB" intext:"Databases"', sev:'critical', desc:'MongoDB admin UI — intitle: for service name; inurl:28017 does NOT work (Google ignores ports)' },
+    { id:'db5', title:'CouchDB Admin', q:'intitle:"Apache CouchDB" intext:"Welcome"', sev:'critical', desc:'CouchDB — intitle: for unique page title; inurl:5984 does NOT work in Google' },
+    { id:'db6', title:'Elasticsearch', q:'intitle:"Elasticsearch" intext:"cluster_name"', sev:'critical', desc:'Elasticsearch — intitle: for service name; inurl:9200 does NOT work (Google ignores ports)' },
+    { id:'db7', title:'Redis Web Admin', q:'intitle:"Redis Commander" OR intitle:"phpRedisAdmin"', sev:'critical', desc:'Redis UI — intitle: for panel names; inurl:6379 does NOT work in Google' },
+    { id:'db8', title:'Cassandra Admin', q:'intitle:"OpsCenter" intext:"Cassandra" OR intitle:"Cassandra" intext:"Cluster Name"', sev:'critical', desc:'Cassandra — intitle: for panel name; inurl:8080 does NOT work (Google ignores ports)' },
     { id:'db9', title:'OWA/Exchange', q:'inurl:/owa intitle:"Outlook Web App"', sev:'high', desc:'Outlook Web Access' },
     { id:'db10', title:'Database Schema', q:'filetype:sql intext:"CREATE DATABASE"', sev:'critical', desc:'Database schema file' },
     { id:'db11', title:'DB Connection String', q:'intext:"jdbc:mysql://" OR intext:"jdbc:postgresql://"', sev:'critical', desc:'JDBC connection strings' },
     { id:'db12', title:'SQLite DB File', q:'filetype:sqlite OR filetype:db inurl:database', sev:'critical', desc:'SQLite/DB files' },
-    { id:'db13', title:'RethinkDB', q:'inurl:8080 intitle:"RethinkDB Administration"', sev:'critical', desc:'RethinkDB admin' },
-    { id:'db14', title:'InfluxDB', q:'inurl:8086 intitle:"InfluxDB"', sev:'high', desc:'InfluxDB admin' },
+    { id:'db13', title:'RethinkDB', q:'intitle:"RethinkDB Administration Console"', sev:'critical', desc:'RethinkDB — intitle: ONLY, unique title; inurl:8080 does NOT work (Google ignores ports)' },
+    { id:'db14', title:'InfluxDB', q:'intitle:"InfluxDB" intext:"Sign In"', sev:'high', desc:'InfluxDB — intitle: for panel name in title; inurl:8086 does NOT work in Google' },
     { id:'db15', title:'MS Access DB', q:'filetype:mdb inurl:database', sev:'critical', desc:'MS Access database files' },
   ],
 
@@ -1181,8 +1250,8 @@ const DORKS = {
     { id:'n14', title:'Palo Alto Admin', q:'intitle:"Palo Alto Networks" inurl:login', sev:'critical', desc:'Palo Alto firewall' },
     { id:'n15', title:'pfSense Firewall', q:'intitle:"pfSense" inurl:index.php', sev:'critical', desc:'pfSense firewall admin' },
     { id:'n16', title:'OpenWRT', q:'intitle:"OpenWrt" inurl:cgi-bin', sev:'high', desc:'OpenWRT router' },
-    { id:'n17', title:'Telnet Open', q:'intitle:"telnet" inurl:23', sev:'critical', desc:'Exposed telnet service' },
-    { id:'n18', title:'FTP Open', q:'intitle:"index of" inurl:ftp://', sev:'high', desc:'Exposed FTP directories' },
+    { id:'n17', title:'Telnet Exposed', q:'intitle:"Telnet" intext:"login:"', sev:'critical', desc:'Telnet pages — intitle: for service name in title; inurl:23 does NOT work (Google ignores ports)' },
+    { id:'n18', title:'FTP Open', q:'intitle:"index of" inurl:"/ftp/"', sev:'high', desc:'FTP directories — intitle: for open dir listing; inurl:/ftp/ for the path (not inurl:ftp:// which Google ignores)' },
     { id:'n19', title:'Smart Home', q:'intitle:"Home Automation" OR inurl:"home-assistant"', sev:'high', desc:'Smart home systems' },
   ],
 
@@ -1232,7 +1301,7 @@ const DORKS = {
   ],
 
   credentials: [
-    { id:'cr1', title:'Password in URL', q:'inurl:password inurl:username filetype:log', sev:'critical', desc:'Credentials in log URLs' },
+    { id:'cr1', title:'Credentials in Log', q:'filetype:log intext:"username=" intext:"password="', sev:'critical', desc:'Credentials in logs — filetype: for log files; intext: searches PAGE BODY for the strings (inurl:password was wrong — passwords are in content, not in the URL path)' },
     { id:'cr2', title:'Password TXT', q:'filetype:txt intext:"password" intext:"username"', sev:'critical', desc:'Credentials in text files' },
     { id:'cr3', title:'Credential Config', q:'filetype:cfg intext:"password" intext:"user"', sev:'critical', desc:'Config files with creds' },
     { id:'cr4', title:'Email Passwords', q:'filetype:xls intext:"password" intext:"email"', sev:'critical', desc:'Excel sheets with passwords' },
@@ -1274,8 +1343,8 @@ const DORKS = {
   code: [
     { id:'g1', title:'.git Directory', q:'inurl:"/.git" intitle:"index of /.git"', sev:'critical', desc:'Exposed .git repository' },
     { id:'g2', title:'Git Config Exposed', q:'inurl:"/.git/config" filetype:config', sev:'critical', desc:'Git config file exposed' },
-    { id:'g3', title:'GitHub Sensitive Files', q:'site:github.com "api_key" OR "secret_key" OR "password"', sev:'critical', desc:'GitHub sensitive files' },
-    { id:'g4', title:'GitLab Exposed', q:'site:gitlab.com "password" OR "secret"', sev:'critical', desc:'GitLab sensitive files' },
+    { id:'g3', title:'GitHub Sensitive Files', q:'site:github.com intext:"api_key" OR site:github.com intext:"secret_key"', sev:'critical', desc:'GitHub secrets — site: restricts to github.com; intext: searches the code CONTENT (bare quotes without operator are unreliable)' },
+    { id:'g4', title:'GitLab Exposed', q:'site:gitlab.com intext:"password" OR site:gitlab.com intext:"secret"', sev:'critical', desc:'GitLab secrets — site: restricts to gitlab.com; intext: searches file content (not just title or URL)' },
     { id:'g5', title:'.gitignore', q:'inurl:".gitignore" filetype:gitignore', sev:'medium', desc:'Gitignore reveals structure' },
     { id:'g6', title:'CI/CD Config', q:'inurl:".travis.yml" OR inurl:".circleci"', sev:'high', desc:'CI/CD configuration' },
     { id:'g7', title:'Dockerfile Exposed', q:'filetype:dockerfile OR inurl:Dockerfile', sev:'high', desc:'Dockerfile contents' },
@@ -1329,10 +1398,26 @@ function createCard(dork, cat) {
 
   const formattedQ = formatQuery(dork.q);
 
+  // Extract which operators are used in this dork
+  const ops = [];
+  if (/filetype:/i.test(dork.q)) ops.push({label:'filetype:', tip:'Search by file extension', color:'#ff9f43'});
+  if (/inurl:/i.test(dork.q))    ops.push({label:'inurl:', tip:'Keyword in URL path/filename', color:'#00e5ff'});
+  if (/intitle:/i.test(dork.q))  ops.push({label:'intitle:', tip:'Keyword in page title tag', color:'#c77dff'});
+  if (/intext:/i.test(dork.q))   ops.push({label:'intext:', tip:'Keyword in page body content', color:'#39ff7a'});
+  if (/^site:/i.test(dork.q) || /\ssite:/i.test(dork.q)) ops.push({label:'site:', tip:'Restrict to specific domain', color:'#ffaa00'});
+
+  const opBadges = ops.map(o =>
+    `<span class="op-badge" style="border-color:${o.color};color:${o.color}" title="${o.tip}">${o.label}</span>`
+  ).join('');
+
   div.innerHTML = `
     <span class="dork-badge ${badgeClass}">${dork.sev.toUpperCase()}</span>
     <div class="dork-title">${dork.title}</div>
     <div class="dork-query">${formattedQ}</div>
+    <div class="dork-meta">
+      <div class="op-badges">${opBadges}</div>
+      ${dork.desc ? `<div class="dork-desc" title="${dork.desc}">ⓘ ${dork.desc}</div>` : ''}
+    </div>
   `;
 
   div.onclick = () => toggleDork(dork.id, dork.q, div);
